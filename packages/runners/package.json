@@ -1,5 +1,6 @@
 {
   "name": "@jobbig/runners",
+  "version": "0.0.1",
   "module": "./dist/index.js",
   "zshy": "./src/index.ts",
   "type": "module",
