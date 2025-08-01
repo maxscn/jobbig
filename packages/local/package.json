@@ -1,0 +1,31 @@
+{
+  "name": "@jobbig/local",
+  "version": "0.0.1",
+  "module": "./dist/index.js",
+  "type": "module",
+  "zshy": "./src/index.ts",
+  "scripts": {
+    "build": "zshy"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@jobbig/core": "workspace:*"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.cts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  }
+}

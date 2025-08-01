@@ -1,0 +1,23 @@
+{
+  "name": "jobbig",
+  "version": "0.0.1",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "devDependencies": {
+    "@types/bun": "latest",
+    "zshy": "^0.3.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "turbo": "^2.5.5"
+  },
+  "packageManager": "bun@1.2.19",
+  "scripts": {
+    "build": "turbo run build"
+  }
+}

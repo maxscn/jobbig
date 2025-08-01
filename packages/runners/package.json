@@ -1,0 +1,30 @@
+{
+  "name": "@jobbig/runners",
+  "module": "./dist/index.js",
+  "zshy": "./src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "zshy"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@jobbig/core": "workspace:*"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.cts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  }
+}
