@@ -14,6 +14,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@changesets/cli": "^2.29.5",
     "turbo": "^2.5.5"
   },
   "packageManager": "bun@1.2.19",
