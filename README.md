@@ -15,7 +15,7 @@ A worker is a handler for different types of environments.
 An orchestrator specifies how the polling of jobs is done. In a cron job, it exhausts the queue until it is empty, but in a server environment, it constantly polls the queue for new jobs within a specified interval.
 
 ### Runner
-A runner is responsible for executing jobs. There exists a [`BaseRunner`](packages/core/runner.ts), which is likely sufficient in most cases.
+A runner is responsible for executing jobs. There exists a [`BaseRunner`](packages/core/src/runner.ts), which is likely sufficient in most cases.
 
 ### Job
 A job is a function which can be scheduled. A job can consist of multiple steps.
