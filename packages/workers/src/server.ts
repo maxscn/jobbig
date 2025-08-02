@@ -6,9 +6,9 @@ import {
 
 const DEFAULT_POLL_INTERVAL = 1000;
 
-export const ContinousWorker = (
+export function ContinousWorker(
 	opts: OrchestratorOpts & { pollInterval?: number },
-): Worker => {
+): Worker {
 	const poll = BaseOrchestrator(opts);
 	const interval = opts.pollInterval || DEFAULT_POLL_INTERVAL;
 	return {
@@ -22,4 +22,4 @@ export const ContinousWorker = (
 			}
 		},
 	};
-};
+}

@@ -11,7 +11,7 @@ export interface Job<T extends StandardSchemaV1 = any> {
 	 * @param opts - The options for running the job.
 	 * @returns A promise that resolves when the job is completed.
 	 */
-	run: (opts: RunInput<StandardSchemaV1.InferInput<T>>) => Promise<void>;
+	run(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
 	/**
 	 * Schema of the data
 	 */
@@ -27,22 +27,14 @@ export interface Job<T extends StandardSchemaV1 = any> {
 		 * @param attempt (the current attempt, starts at 0)
 		 * @returns delay
 		 */
-		delayFn?: (attempt: number) => number;
+		delayFn?(attempt: number): number;
 	};
 
 	hooks?: {
-		beforeRun?: ({
-			ctx,
-		}: RunInput<StandardSchemaV1.InferInput<T>>) => Promise<void>;
-		afterRun?: ({
-			ctx,
-		}: RunInput<StandardSchemaV1.InferInput<T>>) => Promise<void>;
-		beforeStep?: ({
-			ctx,
-		}: RunInput<StandardSchemaV1.InferInput<T>>) => Promise<void>;
-		afterStep?: ({
-			ctx,
-		}: RunInput<StandardSchemaV1.InferInput<T>>) => Promise<void>;
+		beforeRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+		afterRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+		beforeStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+		afterStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
 	};
 }
 

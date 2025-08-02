@@ -8,7 +8,7 @@ interface PublishOpts {
 }
 
 export interface Publisher {
-	publish: (run: Run) => Promise<void>;
+	publish(run: Run): Promise<void>;
 }
 
 export function Publisher({ queue, store }: PublishOpts): Publisher {

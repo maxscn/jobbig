@@ -3,8 +3,8 @@
  * Wrap logic you don't want to execute twice in a step.
  */
 export interface Step {
-	run: (id: string, handler: () => Promise<void>) => Promise<void>;
-	cleanup: () => Promise<void>;
+	run(id: string, handler: () => Promise<void>): Promise<void>;
+	cleanup(): Promise<void>;
 }
 
 interface StepOpts {
@@ -12,7 +12,7 @@ interface StepOpts {
 	 * Starts at 1.
 	 */
 	currentStep: number;
-	setCurrentStep: (step: number) => Promise<void>;
+	setCurrentStep(step: number): Promise<void>;
 	runId: string;
 }
 

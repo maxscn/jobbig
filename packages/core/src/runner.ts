@@ -9,7 +9,7 @@ export interface RunnerOpts {
 	jobs: Job[];
 }
 export interface Runner {
-	run: () => Promise<void>;
+	run(): Promise<void>;
 }
 
 export function BaseRunner({ run, store, jobs }: RunnerOpts): Runner {

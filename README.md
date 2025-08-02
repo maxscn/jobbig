@@ -1,5 +1,5 @@
 # Jobbig
-
+[![release](https://github.com/maxscn/jobbig/actions/workflows/release.yml/badge.svg)](https://github.com/maxscn/jobbig/actions/workflows/release.yml)
 \[ˈjɔbːɪɡ\] the swedish word for **bothersome**
 
 A TypeScript job orchestration framework with step-by-step execution, schema validation, and pluggable storage/queue backends.
@@ -87,7 +87,7 @@ A runner is responsible for executing jobs. There exists a [`BaseRunner`](packag
 
 ```typescript
 export interface Runner {
-	run: () => Promise<void>;
+	run(): Promise<void>;
 }
 ```
 
@@ -105,7 +105,7 @@ export interface Job<T extends StandardSchemaV1 = any> {
 	 * @param opts - The options for running the job.
 	 * @returns A promise that resolves when the job is completed.
 	 */
-	run: (opts: RunInput<StandardSchemaV1.InferInput<T>>) => Promise<void>;
+	run(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
 	/**
 	 * Schema of the data
 	 */
@@ -125,18 +125,10 @@ export interface Job<T extends StandardSchemaV1 = any> {
 	};
 
 	hooks?: {
-		beforeRun?: ({
-			ctx,
-		}: RunInput<StandardSchemaV1.InferInput<T>>) => Promise<void>;
-		afterRun?: ({
-			ctx,
-		}: RunInput<StandardSchemaV1.InferInput<T>>) => Promise<void>;
-		beforeStep?: ({
-			ctx,
-		}: RunInput<StandardSchemaV1.InferInput<T>>) => Promise<void>;
-		afterStep?: ({
-			ctx,
-		}: RunInput<StandardSchemaV1.InferInput<T>>) => Promise<void>;
+		beforeRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+		afterRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+		beforeStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+		afterStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
 	};
 }
 ```
@@ -146,8 +138,8 @@ A step is a smaller part of a job, which consists of a handler and an id. A step
 
 ```typescript
 export interface Step {
-	run: (id: string, handler: () => Promise<void>) => Promise<void>;
-	cleanup: () => Promise<void>;
+	run(id: string, handler: () => Promise<void>): Promise<void>;
+	cleanup(): Promise<void>;
 }
 ```
 
@@ -200,8 +192,8 @@ export interface QueueInfo {
 }
 
 export interface Queue {
-	push: (run: Run) => Promise<unknown>;
-  poll: (amount: number) => Promise<{ runs: Run[], info: QueueInfo }>;
+	push(run: Run): Promise<unknown>;
+  poll(amount: number): Promise<{ runs: Run[], info: QueueInfo }>;
 }
 ```
 
@@ -210,7 +202,7 @@ A publisher is responsible for publishing runs to a queue.
 
 ```typescript
 export interface Publisher {
-	publish: (run: Run) => Promise<void>;
+	publish(run: Run): Promise<void>;
 }
 ```
 
