@@ -22,38 +22,39 @@ export const orchestrator: Orchestrator = (opts: OrchestratorOpts) => {
 	return async () => {
 		const { runs, info } = await queue.poll(amount);
 		if (!runs || runs.length === 0) {
-      console.log("no runs found")
-      return info;
+			console.log("no runs found");
+			return info;
 		}
 		for (const run of runs) {
-      const status = await store.getStatus(run.id);
-      if (status !== "pending") {
-        continue;
+			const status = await store.get(run.id, "status");
+			if (status !== "pending") {
+				continue;
 			}
-		  await store.setStatus(run.id, "running")
+			await store.set(run.id, "status", "running");
 			const job = jobs.find((job) => job.id === run.jobId);
 			if (!job) {
-			  console.log("no job matches the run")
-				await store.setStatus(run.id, "failure");
-        continue;
+				console.log("no job matches the run");
+				await store.set(run.id, "status", "failure");
+				continue;
 			}
 			try {
-			  await job.run({
+				await job.run({
 					ctx: {
 						data: run.data,
 						step: step({
 							currentStep: run.currentStep,
 							runId: run.id,
-							setCurrentStep: async (step) => await store.setCurrentStep(run.id, step)
-						})
-					}
+							setCurrentStep: async (step) =>
+								await store.set(run.id, "currentStep", step),
+						}),
+					},
 				});
-			  await store.setStatus(run.id, "success")
+				await store.set(run.id, "status", "success");
 			} catch (err) {
-        console.error(err);
-				await store.setStatus(run.id, "failure");
+				console.error(err);
+				await store.set(run.id, "status", "failure");
 			}
 		}
-    return info;
+		return info;
 	};
 };

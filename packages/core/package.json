@@ -3,7 +3,14 @@
   "version": "0.0.1",
   "module": "./dist/index.js",
   "type": "module",
-  "zshy": "./src/index.ts",
+  "zshy": {
+    "main": "./src/index.ts",
+    "module": "./src/index.ts",
+    "exports": {
+      ".": "./src/index.ts",
+      "./utils": "./src/utils/index.ts"
+    }
+  },
   "scripts": {
     "build": "zshy"
   },
@@ -26,6 +33,11 @@
       "types": "./dist/index.d.cts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.cts",
+      "import": "./dist/utils/index.js",
+      "require": "./dist/utils/index.cjs"
     }
   }
 }

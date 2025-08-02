@@ -3,30 +3,29 @@ export interface Step {
 }
 
 interface StepOpts {
-  /**
-   * Starts at 1.
-   */
+	/**
+	 * Starts at 1.
+	 */
 	currentStep: number;
 	setCurrentStep: (step: number) => Promise<void>;
 	runId: string;
 }
 
-const visitedStepsRegistry: { [runId: string]: string[] } = {
-
-}
+const visitedStepsRegistry: { [runId: string]: string[] } = {};
 
 export const step = ({ currentStep, runId, setCurrentStep }: StepOpts) => {
-  visitedStepsRegistry[runId] = [];
+	visitedStepsRegistry[runId] = [];
 	return {
 		run: async (id: string, handler: () => Promise<void>) => {
-		const visitedSteps = visitedStepsRegistry[runId];
-		if (!visitedSteps) throw new Error(`Run ${runId} not found.`);
-		if (visitedSteps.includes(id)) throw new Error(`Step ${id} already visited.`);
+			const visitedSteps = visitedStepsRegistry[runId];
+			if (!visitedSteps) throw new Error(`Run ${runId} not found.`);
+			if (visitedSteps.includes(id))
+				throw new Error(`Step ${id} already visited.`);
 
-		visitedSteps.push(id);
-		if (currentStep !== visitedSteps.length - 1) {
-      return;
-		}
+			visitedSteps.push(id);
+			if (currentStep !== visitedSteps.length - 1) {
+				return;
+			}
 
 			console.log(`Running step ${id}...`);
 			await handler();
@@ -35,5 +34,3 @@ export const step = ({ currentStep, runId, setCurrentStep }: StepOpts) => {
 		},
 	};
 };
-
-export class Step {}

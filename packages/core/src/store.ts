@@ -1,10 +1,8 @@
-import type { RunStatus } from "./run";
+import type { Run } from "./run";
 
 export interface MetadataStore {
-  setStatus(runId: string, status: RunStatus): Promise<void>;
-  getStatus(runId: string): Promise<RunStatus>;
-  setContext(runId: string, context: any): Promise<void>;
-  getContext(runId: string): Promise<any>;
-  setCurrentStep(runId: string, step: number): Promise<void>;
-  getCurrentStep(runId: string): Promise<number>;
+	store(run: Run): Promise<void>;
+	set<T extends keyof Run>(runId: string, key: T, value: Run[T]): Promise<void>;
+	get<T extends keyof Run>(runId: string, key: T): Promise<Run[T] | undefined>;
+	fetch(runId: string): Promise<Run | undefined>;
 }

@@ -1,19 +1,22 @@
 import type { Step } from "./step";
 
 export interface Run {
-  id: string;
-  jobId: string;
-  status: RunStatus;
-  scheduledAt: Date;
-  data: any;
-  currentStep: number;
+	id: string;
+	jobId: string;
+	status: RunStatus;
+	scheduledAt: Date;
+	data: unknown;
+	result?: unknown;
+	currentStep: number;
+	startedAt?: Date;
+	createdAt: Date;
+	finishedAt?: Date;
 }
 
 export interface Context<T> {
 	data: T;
-  step: Step;
+	step: Step;
 }
-
 
 export const RunStatus = {
 	PENDING: "pending",
