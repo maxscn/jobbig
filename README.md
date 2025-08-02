@@ -202,7 +202,8 @@ export interface QueueInfo {
 export interface Queue {
 	push: (run: Run) => Promise<unknown>;
   poll: (amount: number) => Promise<{ runs: Run[], info: QueueInfo }>;
-}```
+}
+```
 
 ### Publisher
 A publisher is responsible for publishing runs to a queue.
