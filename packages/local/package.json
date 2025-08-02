@@ -1,6 +1,6 @@
 {
   "name": "@jobbig/local",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "module": "./dist/index.js",
   "type": "module",
   "zshy": "./src/index.ts",
