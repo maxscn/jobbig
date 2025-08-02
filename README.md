@@ -26,8 +26,8 @@ const myJob = job({
     output: z.number().optional(),
   }),
   run: async ({ ctx }) => {
-    await ctx.step.run("validate", async () => {
-      console.log("Validating input...");
+    await ctx.step.run("preprocess", async () => {
+      console.log("Preprocessing input...");
     });
 
     await ctx.step.run("process", async () => {
