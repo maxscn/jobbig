@@ -7,12 +7,12 @@ export interface Store {
 	fetch(runId: string): Promise<Run | undefined>;
 }
 
-export interface RunStore {
+export interface ScopedStore {
 	set<T extends keyof Run>(key: T, value: Run[T]): Promise<void>;
 	get<T extends keyof Run>(key: T): Promise<Run[T] | undefined>;
 }
 
-export function ScopedStore(runId: string, store: Store): RunStore {
+export function ScopedStore(runId: string, store: Store): ScopedStore {
 	return {
 		set<T extends keyof Run>(key: T, value: Run[T]): Promise<void> {
 			return store.set(runId, key, value);

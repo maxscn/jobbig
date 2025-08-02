@@ -6,7 +6,12 @@ interface PublishOpts {
 	queue: Queue;
 	store: Store;
 }
-export function Publisher({ queue, store }: PublishOpts) {
+
+export interface Publisher {
+	publish: (run: Run) => Promise<void>;
+}
+
+export function Publisher({ queue, store }: PublishOpts): Publisher {
 	return {
 		async publish(run: Run) {
 			await store.store(run);

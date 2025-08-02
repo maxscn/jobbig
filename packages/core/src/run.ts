@@ -1,5 +1,5 @@
 import type { Step } from "./step";
-import type { RunStore, Store } from "./store";
+import type { RunStore } from "./store";
 
 export interface Run {
 	id: string;
