@@ -1,5 +1,52 @@
-import type { Orchestrator, OrchestratorOpts } from "./orchestrator";
+import type { Job } from "./job";
+import type { Run } from "./run";
+import { Step } from "./step";
+import { ScopedStore, type Store } from "./store";
 
+export interface RunnerOpts {
+	run: Run;
+	store: Store;
+	jobs: Job[];
+}
 export interface Runner {
-	run: (orchestrator: OrchestratorOpts) => Promise<void>;
+	run: () => Promise<void>;
+}
+
+export function BaseRunner({ run, store, jobs }: RunnerOpts): Runner {
+	return {
+		async run() {
+			const status = await store.get(run.id, "status");
+			if (status !== "pending") {
+				return;
+			}
+			await store.set(run.id, "status", "running");
+			const job = jobs.find((job) => job.id === run.jobId);
+			if (!job) {
+				console.log("no job matches the run");
+				await store.set(run.id, "status", "failure");
+				return;
+			}
+			const step = Step({
+				currentStep: run.currentStep,
+				runId: run.id,
+				setCurrentStep: async (step) =>
+					await store.set(run.id, "currentStep", step),
+			});
+			try {
+				await job.run({
+					ctx: {
+						data: run.data,
+						step,
+						store: ScopedStore(run.id, store),
+					},
+				});
+				await store.set(run.id, "status", "success");
+			} catch (err) {
+				console.error(err);
+				await store.set(run.id, "status", "failure");
+			} finally {
+				await step.cleanup();
+			}
+		},
+	};
 }

@@ -1,14 +1,33 @@
 # Jobbig
 
+\[ˈjɔbːɪɡ\] the swedish word for **bothersome**
+
 A TypeScript job orchestration framework with step-by-step execution, schema validation, and pluggable storage/queue backends.
 
-## Features
+## Concepts
 
-- **Step-based execution**: Break jobs into resumable steps that can be retried individually
-- **Schema validation**: Type-safe job inputs with standard schema integration
-- **Pluggable backends**: Support for different queue and storage implementations
-- **Local development**: Built-in local queue and storage for development
-- **Server runner**: HTTP server for job execution and monitoring
+A brief explanation of the key interfaces and concepts of Jobbig.
+
+### Worker
+A worker is a handler for different types of environments.
+
+### Orchestrator
+An orchestrator specifies how the polling of jobs is done. In a cron job, it exhausts the queue until it is empty, but in a server environment, it constantly polls the queue for new jobs within a specified interval.
+
+### Runner
+A runner is responsible for executing jobs. There exists a [`BaseRunner`](packages/core/runner.ts), which is likely sufficient in most cases.
+
+### Job
+A job is a function which can be scheduled. A job can consist of multiple steps.
+
+### Step
+A step is a smaller part of a job, which consists of a handler and an id. A step with a given id will only be executed once per job. While the core logic of the job will be rerun on retries.
+
+### Run
+A run is a scheduled execution of a job. It contains metadata about the jobs execution, such as the status, start time, end time, results and the current execution step.
+
+### Publisher
+A publisher is responsible for publishing runs to a queue.
 
 ## Quick Start
 
@@ -44,30 +63,30 @@ const myJob = job({
 const queue = LocalQueue([]);
 const store = LocalStore({});
 
+
+
 // Start the server
-server({
+const worker = ContinousWorker({
   queue,
   store,
   jobs: [myJob],
 });
+worker.start();
+
+
+
+// Create the publisher
+const publisher = Publisher({
+	queue,
+	store,
+});
+
+// Publish runs
+for (const run of runs) {
+	await publisher.publish(run);
+}
+
 ```
-
-## Architecture
-
-Jobbig consists of several packages:
-
-- **`@jobbig/core`**: Core job definitions, types, and orchestration logic
-- **`@jobbig/local`**: Local implementations of queue and storage for development
-- **`@jobbig/runners`**: Job execution runners (server, cron, etc.)
-
-## Job Execution Model
-
-Jobs in Jobbig are executed step-by-step with automatic resumption:
-
-1. **Job Definition**: Define jobs with schema validation and step-based execution
-2. **Run Scheduling**: Jobs are scheduled as runs with specific data and timing
-3. **Step Execution**: Each step is executed in order, with state persisted between steps
-4. **Resumption**: If a job fails, it can resume from the last completed step
 
 ## Development
 

@@ -1,5 +1,10 @@
+/**
+ * When rerunning jobs due to failure, previous steps will be skipped.
+ * Wrap logic you don't want to execute twice in a step.
+ */
 export interface Step {
 	run: (id: string, handler: () => Promise<void>) => Promise<void>;
+	cleanup: () => Promise<void>;
 }
 
 interface StepOpts {
@@ -13,10 +18,10 @@ interface StepOpts {
 
 const visitedStepsRegistry: { [runId: string]: string[] } = {};
 
-export const step = ({ currentStep, runId, setCurrentStep }: StepOpts) => {
+export function Step({ currentStep, runId, setCurrentStep }: StepOpts): Step {
 	visitedStepsRegistry[runId] = [];
 	return {
-		run: async (id: string, handler: () => Promise<void>) => {
+		async run(id: string, handler: () => Promise<void>) {
 			const visitedSteps = visitedStepsRegistry[runId];
 			if (!visitedSteps) throw new Error(`Run ${runId} not found.`);
 			if (visitedSteps.includes(id))
@@ -32,5 +37,8 @@ export const step = ({ currentStep, runId, setCurrentStep }: StepOpts) => {
 			await setCurrentStep(currentStep + 1);
 			console.log(`Step ${id} completed.`);
 		},
+		cleanup: async () => {
+			delete visitedStepsRegistry[runId];
+		},
 	};
-};
+}

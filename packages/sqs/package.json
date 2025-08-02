@@ -1,0 +1,16 @@
+{
+  "name": "@jobbig/sqs",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.152",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "aws4fetch": "^1.0.20",
+    "@jobbig/core": "workspace:*"
+  }
+}

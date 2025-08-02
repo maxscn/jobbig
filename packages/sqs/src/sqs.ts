@@ -1,0 +1,71 @@
+import type { Queue } from "@jobbig/core";
+import { must } from "@jobbig/core/utils";
+import { AwsClient } from "aws4fetch";
+
+const MAX_DELAY_SECONDS = 900;
+
+interface SQSOpts {
+	/**
+	 * Queue url for SQS queue.
+	 */
+	queueUrl: string;
+	/**
+	 * The SQS implementation requires a backing seperate queue to support delayed messages.
+	 * This queue is skipped if the scheduled date is within 15 minutes of the current time, as that is the maximum delay supported by SQS.
+	 */
+	queue: Queue;
+}
+export function SQS({ queueUrl, queue }: SQSOpts): Queue {
+	const aws = new AwsClient({
+		accessKeyId: must(
+			process.env.AWS_ACCESS_KEY_ID,
+			"AWS_ACCESS_KEY_ID is not set",
+		),
+		secretAccessKey: must(
+			process.env.AWS_SECRET_ACCESS_KEY,
+			"AWS_SECRET_ACCESS_KEY is not set",
+		),
+		region: must(process.env.AWS_REGION, "AWS_REGION is not set"),
+	});
+	async function sendMessage(messageBody: string) {
+		const params = new URLSearchParams({
+			Action: "SendMessage",
+			MessageBody: messageBody,
+			Version: "2012-11-05",
+		});
+
+		const url = `${queueUrl}?${params.toString()}`;
+
+		const res = await aws.fetch(url, { method: "POST" });
+		if (!res.ok) {
+			throw new Error(
+				`Failed to send message: ${res.status} ${await res.text()}`,
+			);
+		}
+		const json = await res.json();
+		console.log("SQS Response:", json);
+	}
+
+	return {
+		async poll(amount) {
+			const { runs, info } = await queue.poll(amount);
+			for (const run of runs) {
+				await this.push(run);
+			}
+			return { runs, info };
+		},
+		async push(run) {
+			const timestamp = Math.floor(Date.now() / 1000);
+			const delaySeconds = Math.max(
+				0,
+				run.scheduledAt.getTime() / 1000 - timestamp,
+			);
+			if (delaySeconds > MAX_DELAY_SECONDS) {
+				await queue.push(run);
+			} else {
+				const messageBody = JSON.stringify(run);
+				await sendMessage(messageBody);
+			}
+		},
+	};
+}

@@ -1,20 +1,20 @@
 import type { Job } from "./job";
 import type { Queue, QueueInfo } from "./queue";
-import { step } from "./step";
-import type { MetadataStore } from "./store";
+import { BaseRunner } from "./runner";
+import type { Store } from "./store";
 
 const DEFAULT_POLL_AMOUNT = 10;
 
 export interface OrchestratorOpts {
 	amount?: number;
 	queue: Queue;
-	store: MetadataStore;
-	jobs: Job<any>[];
+	store: Store;
+	jobs: Job[];
 }
 
 export type Orchestrator = (opts: OrchestratorOpts) => () => Promise<QueueInfo>;
 
-export const orchestrator: Orchestrator = (opts: OrchestratorOpts) => {
+export const BaseOrchestrator: Orchestrator = (opts: OrchestratorOpts) => {
 	const amount = opts.amount ?? DEFAULT_POLL_AMOUNT;
 	const queue = opts.queue;
 	const store = opts.store;
@@ -26,34 +26,8 @@ export const orchestrator: Orchestrator = (opts: OrchestratorOpts) => {
 			return info;
 		}
 		for (const run of runs) {
-			const status = await store.get(run.id, "status");
-			if (status !== "pending") {
-				continue;
-			}
-			await store.set(run.id, "status", "running");
-			const job = jobs.find((job) => job.id === run.jobId);
-			if (!job) {
-				console.log("no job matches the run");
-				await store.set(run.id, "status", "failure");
-				continue;
-			}
-			try {
-				await job.run({
-					ctx: {
-						data: run.data,
-						step: step({
-							currentStep: run.currentStep,
-							runId: run.id,
-							setCurrentStep: async (step) =>
-								await store.set(run.id, "currentStep", step),
-						}),
-					},
-				});
-				await store.set(run.id, "status", "success");
-			} catch (err) {
-				console.error(err);
-				await store.set(run.id, "status", "failure");
-			}
+			const runner = BaseRunner({ run, store, jobs });
+			await runner.run();
 		}
 		return info;
 	};

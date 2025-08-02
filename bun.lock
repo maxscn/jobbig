@@ -21,7 +21,7 @@
       "dependencies": {
         "@jobbig/core": "workspace:*",
         "@jobbig/local": "workspace:*",
-        "@jobbig/runners": "workspace:*",
+        "@jobbig/workers": "workspace:*",
         "zod": "^4.0.14",
       },
       "devDependencies": {
@@ -57,23 +57,25 @@
         "typescript": "^5",
       },
     },
-    "packages/runners": {
-      "name": "@jobbig/runners",
-      "version": "0.0.1",
+    "packages/sqs": {
+      "name": "@jobbig/sqs",
       "dependencies": {
         "@jobbig/core": "workspace:*",
+        "aws4fetch": "^1.0.20",
       },
       "devDependencies": {
+        "@types/aws-lambda": "^8.10.152",
         "@types/bun": "latest",
       },
       "peerDependencies": {
         "typescript": "^5",
       },
     },
-    "packages/sqs": {
-      "name": "@jobbig/sqs",
+    "packages/workers": {
+      "name": "@jobbig/workers",
+      "version": "0.0.1",
       "dependencies": {
-        "aws4fetch": "^1.0.20",
+        "@jobbig/core": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -142,9 +144,9 @@
 
     "@jobbig/local": ["@jobbig/local@workspace:packages/local"],
 
-    "@jobbig/runners": ["@jobbig/runners@workspace:packages/runners"],
-
     "@jobbig/sqs": ["@jobbig/sqs@workspace:packages/sqs"],
+
+    "@jobbig/workers": ["@jobbig/workers@workspace:packages/workers"],
 
     "@manypkg/find-root": ["@manypkg/find-root@1.1.0", "", { "dependencies": { "@babel/runtime": "^7.5.5", "@types/node": "^12.7.1", "find-up": "^4.1.0", "fs-extra": "^8.1.0" } }, "sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA=="],
 
@@ -159,6 +161,8 @@
     "@sindresorhus/merge-streams": ["@sindresorhus/merge-streams@2.3.0", "", {}, "sha512-LtoMMhxAlorcGhmFYI+LhPgbPZCkgP6ra1YL604EeF6U98pLlQ3iWIGMdWSC+vWmPBWBNgmDBAhnAobLROJmwg=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.0.0", "", {}, "sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA=="],
+
+    "@types/aws-lambda": ["@types/aws-lambda@8.10.152", "", {}, "sha512-soT/c2gYBnT5ygwiHPmd9a1bftj462NWVk2tKCc1PYHSIacB2UwbTS2zYG4jzag1mRDuzg/OjtxQjQ2NKRB6Rw=="],
 
     "@types/bun": ["@types/bun@1.2.19", "", { "dependencies": { "bun-types": "1.2.19" } }, "sha512-d9ZCmrH3CJ2uYKXQIUuZ/pUnTqIvLDS0SK7pFmbx8ma+ziH/FRMoAq5bYpRG7y+w1gl+HgyNZbtqgMq4W4e2Lg=="],
 

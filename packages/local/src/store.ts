@@ -1,9 +1,9 @@
-import type { MetadataStore, Run, RunStatus } from "@jobbig/core";
+import type { Run, Store } from "@jobbig/core";
 
-type Store = {
+type State = {
 	[runId: string]: Run;
 };
-export function LocalStore(state: Store): MetadataStore {
+export function LocalStore(state: State): Store {
 	const store = state;
 
 	return {

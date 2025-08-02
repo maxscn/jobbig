@@ -1,7 +1,7 @@
-import { job, type Run } from "@jobbig/core";
+import { job, Publisher, type Run } from "@jobbig/core";
 import { sleep } from "@jobbig/core/utils";
 import { LocalQueue, LocalStore } from "@jobbig/local";
-import { server } from "@jobbig/runners";
+import { ContinousWorker } from "@jobbig/workers";
 import { z } from "zod";
 
 const runs: Run[] = [
@@ -37,8 +37,12 @@ const runs: Run[] = [
 	},
 ] as const;
 
-const queue = LocalQueue([...runs]);
-const store = LocalStore(Object.fromEntries(runs.map((r) => [r.id, r])));
+const queue = LocalQueue([]);
+const store = LocalStore({});
+const publisher = Publisher({
+	queue,
+	store,
+});
 
 const jobs = [
 	job({
@@ -74,8 +78,13 @@ const jobs = [
 	}),
 ];
 
-server({
+const worker = ContinousWorker({
 	queue,
 	store,
 	jobs: jobs,
 });
+worker.start();
+
+for (const run of runs) {
+	await publisher.publish(run);
+}

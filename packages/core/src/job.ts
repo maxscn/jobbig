@@ -1,7 +1,7 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { RunInput } from "./run";
 
-export interface Job<T extends StandardSchemaV1> {
+export interface Job<T extends StandardSchemaV1 = any> {
 	/**
 	 * Unique identifier of the jobs. Used to match handlers with runs.
 	 */
