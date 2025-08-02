@@ -1,5 +1,5 @@
 import type { Step } from "./step";
-import type { RunStore } from "./store";
+import type { ScopedStore } from "./store";
 
 export interface Run {
 	id: string;
@@ -17,7 +17,7 @@ export interface Run {
 export interface Context<T> {
 	data: T;
 	step: Step;
-	store: RunStore;
+	store: ScopedStore;
 }
 
 export const RunStatus = {
