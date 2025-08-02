@@ -1,5 +1,5 @@
 import type { Queue } from "@jobbig/core";
-import { must } from "@jobbig/core/utils";
+import { must } from "@jobbig/core";
 import { AwsClient } from "aws4fetch";
 
 const MAX_DELAY_SECONDS = 900;
@@ -12,6 +12,7 @@ interface SQSOpts {
 	/**
 	 * The SQS implementation requires a backing seperate queue to support delayed messages.
 	 * This queue is skipped if the scheduled date is within 15 minutes of the current time, as that is the maximum delay supported by SQS.
+	 *
 	 */
 	queue: Queue;
 }
@@ -27,16 +28,15 @@ export function SQS({ queueUrl, queue }: SQSOpts): Queue {
 		),
 		region: must(process.env.AWS_REGION, "AWS_REGION is not set"),
 	});
-	async function sendMessage(messageBody: string) {
-		const params = new URLSearchParams({
-			Action: "SendMessage",
-			MessageBody: messageBody,
-			Version: "2012-11-05",
+	async function sendMessage(payload: any) {
+		const res = await aws.fetch(`https://sqs.${aws.region}.amazonaws.com`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/x-amz-json-1.0",
+				"X-Amz-Target": `AmazonSQS.SendMessage`,
+			},
+			body: JSON.stringify(payload),
 		});
-
-		const url = `${queueUrl}?${params.toString()}`;
-
-		const res = await aws.fetch(url, { method: "POST" });
 		if (!res.ok) {
 			throw new Error(
 				`Failed to send message: ${res.status} ${await res.text()}`,
@@ -64,7 +64,11 @@ export function SQS({ queueUrl, queue }: SQSOpts): Queue {
 				await queue.push(run);
 			} else {
 				const messageBody = JSON.stringify(run);
-				await sendMessage(messageBody);
+				await sendMessage({
+					MessageBody: messageBody,
+					DelaySeconds: delaySeconds,
+					QueueUrl: queueUrl,
+				});
 			}
 		},
 	};

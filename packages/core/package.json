@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "module": "./dist/index.js",
   "type": "module",
+  "sideEffects": false,
   "zshy": {
     "main": "./src/index.ts",
     "module": "./src/index.ts",
     "exports": {
       ".": "./src/index.ts",
-      "./utils": "./src/utils/index.ts"
+      "./utils": "./src/utils/index.ts",
+      "./utils/*": "./src/utils/*"
     }
   },
   "scripts": {
@@ -38,6 +40,11 @@
       "types": "./dist/utils/index.d.cts",
       "import": "./dist/utils/index.js",
       "require": "./dist/utils/index.cjs"
+    },
+    "./utils/*": {
+      "types": "./dist/utils/*",
+      "import": "./dist/utils/*",
+      "require": "./dist/utils/*"
     }
   }
 }

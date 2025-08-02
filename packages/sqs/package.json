@@ -1,7 +1,7 @@
 {
   "name": "@jobbig/sqs",
   "version": "0.1.0",
-  "module": "src/index.ts",
+  "module": "./dist/index.js",
   "zshy": "./src/index.ts",
   "type": "module",
   "devDependencies": {
@@ -14,5 +14,20 @@
   "dependencies": {
     "aws4fetch": "^1.0.20",
     "@jobbig/core": "workspace:*"
+  },
+  "scripts": {
+    "build": "zshy"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.cts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   }
 }

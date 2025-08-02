@@ -31,9 +31,25 @@
         "typescript": "^5",
       },
     },
+    "examples/sqs": {
+      "name": "sqs",
+      "dependencies": {
+        "@jobbig/core": "workspace:*",
+        "@jobbig/local": "workspace:*",
+        "@jobbig/sqs": "workspace:*",
+        "@jobbig/workers": "workspace:*",
+        "zod": "^4.0.14",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
     "packages/core": {
       "name": "@jobbig/core",
-      "version": "0.0.1",
+      "version": "0.1.0",
       "dependencies": {
         "@standard-schema/spec": "^1.0.0",
       },
@@ -46,7 +62,7 @@
     },
     "packages/local": {
       "name": "@jobbig/local",
-      "version": "0.0.1",
+      "version": "0.1.0",
       "dependencies": {
         "@jobbig/core": "workspace:*",
       },
@@ -59,6 +75,7 @@
     },
     "packages/sqs": {
       "name": "@jobbig/sqs",
+      "version": "0.1.0",
       "dependencies": {
         "@jobbig/core": "workspace:*",
         "aws4fetch": "^1.0.20",
@@ -73,7 +90,7 @@
     },
     "packages/workers": {
       "name": "@jobbig/workers",
-      "version": "0.0.1",
+      "version": "0.1.0",
       "dependencies": {
         "@jobbig/core": "workspace:*",
       },
@@ -341,6 +358,8 @@
     "spawndamnit": ["spawndamnit@3.0.1", "", { "dependencies": { "cross-spawn": "^7.0.5", "signal-exit": "^4.0.1" } }, "sha512-MmnduQUuHCoFckZoWnXsTg7JaiLBJrKFj9UI2MbRPGaJeVpsLcVBu6P/IGZovziM/YBsellCmsprgNA+w0CzVg=="],
 
     "sprintf-js": ["sprintf-js@1.0.3", "", {}, "sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g=="],
+
+    "sqs": ["sqs@workspace:examples/sqs"],
 
     "string-width": ["string-width@4.2.3", "", { "dependencies": { "emoji-regex": "^8.0.0", "is-fullwidth-code-point": "^3.0.0", "strip-ansi": "^6.0.1" } }, "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g=="],
 
