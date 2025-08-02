@@ -1,6 +1,5 @@
 # Jobbig
-[![release](https://github.com/maxscn/jobbig/actions/workflows/release.yml/badge.svg)](https://github.com/maxscn/jobbig/actions/workflows/release.yml)
-
+[![release](https://github.com/maxscn/jobbig/actions/workflows/release.yml/badge.svg)](https://github.com/maxscn/jobbig/actions/workflows/release.yml)\
 \[ˈjɔbːɪɡ\] the swedish word for **bothersome**
 
 A TypeScript job orchestration framework with step-by-step execution, schema validation, and pluggable storage/queue backends.
