@@ -2,6 +2,7 @@
   "name": "@jobbig/sqs",
   "version": "0.1.0",
   "module": "src/index.ts",
+  "zshy": "./src/index.ts",
   "type": "module",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.152",
