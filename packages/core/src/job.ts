@@ -16,25 +16,25 @@ export interface Job<T extends StandardSchemaV1 = any> {
 	 * Schema of the data
 	 */
 	schema: T;
-	retries?: {
-		/**
-		 * Max amount of retries
-		 * @default 0
-		 */
-		amount?: number;
-		/**
-		 * Defaults to exponential backoff
-		 * @param attempt (the current attempt, starts at 0)
-		 * @returns delay
-		 */
-		delayFn?(attempt: number): number;
-	};
+	// retries?: {
+	// 	/**
+	// 	 * Max amount of retries
+	// 	 * @default 0
+	// 	 */
+	// 	amount?: number;
+	// 	/**
+	// 	 * Defaults to exponential backoff
+	// 	 * @param attempt (the current attempt, starts at 0)
+	// 	 * @returns delay
+	// 	 */
+	// 	delayFn?(attempt: number): number;
+	// };
 
 	hooks?: {
 		beforeRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
 		afterRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
-		beforeStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
-		afterStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+		// beforeStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+		// afterStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
 	};
 }
 

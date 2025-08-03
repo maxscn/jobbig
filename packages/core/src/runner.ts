@@ -29,17 +29,20 @@ export function BaseRunner({ run, store, jobs }: RunnerOpts): Runner {
 			const step = Step({
 				currentStep: run.currentStep,
 				runId: run.id,
-				setCurrentStep: async (step) =>
-					await store.set(run.id, "currentStep", step),
+				setCurrentStep: async (step) => store.set(run.id, "currentStep", step),
 			});
 			try {
-				await job.run({
+				const jobOpts = {
 					ctx: {
 						data: run.data,
 						step,
 						store: ScopedStore(run.id, store),
 					},
-				});
+				};
+				await job.hooks?.beforeRun?.(jobOpts);
+				await job.run(jobOpts);
+				await job.hooks?.afterRun?.(jobOpts);
+
 				await store.set(run.id, "status", "success");
 			} catch (err) {
 				console.error(err);
