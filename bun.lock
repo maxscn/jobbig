@@ -111,7 +111,7 @@
     },
     "packages/core": {
       "name": "@jobbig/core",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "dependencies": {
         "@standard-schema/spec": "^1.0.0",
       },
@@ -124,7 +124,7 @@
     },
     "packages/local": {
       "name": "@jobbig/local",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "dependencies": {
         "@jobbig/core": "workspace:*",
       },
@@ -137,7 +137,7 @@
     },
     "packages/sqs": {
       "name": "@jobbig/sqs",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "dependencies": {
         "@jobbig/core": "workspace:*",
         "aws4fetch": "^1.0.20",
@@ -152,7 +152,7 @@
     },
     "packages/workers": {
       "name": "@jobbig/workers",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "dependencies": {
         "@jobbig/core": "workspace:*",
       },
