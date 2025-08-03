@@ -1,7 +1,6 @@
-import { A } from "@solidjs/router";
+import { Link } from "@tanstack/solid-router";
 import type { ComponentProps } from "solid-js";
 import { For } from "solid-js";
-
 import {
 	Sidebar,
 	SidebarContent,
@@ -14,7 +13,6 @@ import {
 	SidebarMenuItem,
 	SidebarRail,
 } from "@/components/ui/sidebar";
-
 import { SearchForm } from "./search-form";
 import { VersionSwitcher } from "./version-switcher";
 
@@ -171,7 +169,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
 										{(item) => (
 											<SidebarMenuItem>
 												<SidebarMenuButton
-													as={A}
+													as={Link}
 													isActive={item.isActive}
 													href={item.url}
 												>
