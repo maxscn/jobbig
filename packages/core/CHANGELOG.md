@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.1.2
+
+### Patch Changes
+
+- a835f1e: Implemented beforeRun and afterRun hook. Temporarily removed the step hooks and the retries from the interface, as those are not implemented yet.
+
 ## 0.1.1
 
 ### Patch Changes
