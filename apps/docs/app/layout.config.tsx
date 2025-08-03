@@ -27,7 +27,7 @@ export const baseOptions: BaseLayoutProps = {
 					width={32}
 					height={32}
 				/>
-				<span className="mt-4 text-xl">obbig</span>
+				<span className="mt-3.5 text-xl">obbig</span>
 			</>
 		),
 	},
