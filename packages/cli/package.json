@@ -1,0 +1,17 @@
+{
+  "name": "cli",
+  "module": "src/index.ts",
+  "type": "module",
+  "zshy": "./src/index.ts",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@drizzle-team/brocli": "^0.11.0",
+    "@hono/node-server": "^1.18.1",
+    "hono": "^4.8.12"
+  }
+}

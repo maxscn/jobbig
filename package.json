@@ -4,7 +4,8 @@
   "type": "module",
   "workspaces": [
     "packages/*",
-    "examples/*"
+    "examples/*",
+    "apps/*"
   ],
   "devDependencies": {
     "@biomejs/biome": "2.1.3",
@@ -20,6 +21,9 @@
   },
   "packageManager": "bun@1.2.19",
   "scripts": {
+    "dev": "turbo run dev",
+    "dev:watch": "turbo run dev --watch",
+    "dev:watch:all": "turbo run dev --watch --all",
     "build": "turbo run build",
     "release": "turbo run build && changeset publish"
   }
