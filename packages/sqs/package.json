@@ -16,7 +16,8 @@
     "@jobbig/core": "workspace:*"
   },
   "scripts": {
-    "build": "zshy"
+    "build": "zshy",
+    "build:lib": "zshy"
   },
   "files": [
     "dist"

@@ -5,7 +5,8 @@
   "type": "module",
   "zshy": "./src/index.ts",
   "scripts": {
-    "build": "zshy"
+    "build": "zshy",
+    "build:lib": "zshy"
   },
   "devDependencies": {
     "@types/bun": "latest"
