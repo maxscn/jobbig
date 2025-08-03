@@ -6,8 +6,8 @@ export default function HomePage() {
 			<h1 className="text-3xl font-bold">Jobbig</h1>
 			<h2 className="mb-4">Coming soon</h2>
 			<p className="px-5 mx-auto text-fd-muted-foreground max-w-2xl mb-4">
-				A TypeScript library for durable workflows schema validation, and
-				pluggable storage/queue backends.
+				A TypeScript library for type-safe durable workflows with pluggable
+				storage/queue backends.
 			</p>
 			<p className="text-fd-muted-foreground">
 				Peak at the{" "}
