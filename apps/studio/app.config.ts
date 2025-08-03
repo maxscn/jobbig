@@ -6,6 +6,9 @@ import tanstackRouter from "@tanstack/router-plugin/vite";
 export default defineConfig({
 	server: {
 		preset: "vercel",
+		prerender: {
+			crawlLinks: true,
+		},
 	},
 	vite: {
 		plugins: [tanstackRouter({ target: "solid" }), tailwindcss()],
