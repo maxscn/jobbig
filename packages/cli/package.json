@@ -1,8 +1,9 @@
 {
-  "name": "cli",
+  "name": "@jobbig/cli",
   "module": "src/index.ts",
   "type": "module",
   "zshy": "./src/index.ts",
+  "private": true,
   "devDependencies": {
     "@types/bun": "latest"
   },

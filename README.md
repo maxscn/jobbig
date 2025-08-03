@@ -4,7 +4,7 @@
 \
 \[ˈjɔbːɪɡ\] the swedish word for **bothersome**
 
-A TypeScript job orchestration framework with step-by-step execution, schema validation, and pluggable storage/queue backends.
+A TypeScript library for durable workflows schema validation, and pluggable storage/queue backends.
 
 > [!NOTE]
 > This is the first library I ever published, I might not get everything right immediately. Before version 1.0.0, there will be breaking changes. Before 1.0.0, I will treat minor versions as major versions and patches as both bug fixes and features.
