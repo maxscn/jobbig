@@ -6,7 +6,7 @@
 
 A TypeScript library for type-safe durable workflows with pluggable storage/queue backends.
 
-> This is the first library I ever published, I might not get everything right immediately. Before version 1.0.0, there will be breaking changes. Before 1.0.0, I will treat minor versions as major versions and patches as both bug fixes and features.
+> This is the first library I have ever published, I might not get everything right immediately. Before version 1.0.0, there will be breaking changes. Before 1.0.0, I will treat minor versions as major versions and patches as both bug fixes and features.
 
 ## Quick Start
 
