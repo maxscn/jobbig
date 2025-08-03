@@ -1,5 +1,12 @@
 # @jobbig/workers
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [a835f1e]
+  - @jobbig/core@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
