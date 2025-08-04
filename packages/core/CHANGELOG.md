@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.1.11
+
+### Patch Changes
+
+- f898e28: Adding metadata to context
+
 ## 0.1.6
 
 ### Patch Changes
