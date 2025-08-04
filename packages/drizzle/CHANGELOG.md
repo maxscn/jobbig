@@ -1,5 +1,11 @@
 # @jobbig/drizzle
 
+## 0.1.4
+
+### Patch Changes
+
+- c292dee: Making the packages installable
+
 ## 0.0.1
 
 ### Patch Changes
