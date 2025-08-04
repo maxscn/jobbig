@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.1.6
+
+### Patch Changes
+
+- f64739f: renaming publisher to scheduler to fit the theme of jobs better
+
 ## 0.1.4
 
 ### Patch Changes
