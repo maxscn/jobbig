@@ -1,5 +1,11 @@
 # @jobbig/drizzle
 
+## 0.1.5
+
+### Patch Changes
+
+- 3e07316: Proper exports
+
 ## 0.1.4
 
 ### Patch Changes
