@@ -2,18 +2,18 @@ import type { Queue } from "./queue";
 import type { RunData } from "./run";
 import type { Store } from "./store";
 
-interface PublishOpts {
+interface SchedulerOpts {
 	queue: Queue;
 	store: Store;
 }
 
-export interface Publisher {
-	publish(run: RunData): Promise<void>;
+export interface Scheduler {
+	schedule(run: RunData): Promise<void>;
 }
 
-export function Publisher({ queue, store }: PublishOpts): Publisher {
+export function Scheduler({ queue, store }: SchedulerOpts): Scheduler {
 	return {
-		async publish(run: RunData) {
+		async schedule(run: RunData) {
 			await store.store(run);
 			await queue.push(run);
 		},

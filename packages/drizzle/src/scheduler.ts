@@ -1,4 +1,4 @@
-import type { Publisher } from "@jobbig/core";
+import type { Scheduler } from "@jobbig/core";
 import type { Config } from "drizzle-kit";
 import { DrizzleMySQLStore } from "./mysql/store";
 import { DrizzlePostgresStore } from "./postgres/store";
@@ -8,15 +8,15 @@ type DrizzleConfigOpts = {
 };
 
 /**
- * This publisher only sends one request to your database for each publish. This works because the queue and store reads from the same table.
+ * This scheduler only sends one request to your database for each publish. This works because the queue and store reads from the same table.
  * @param opts {
  *    drizzleConfig: Config
  * }
- * @returns Publisher
+ * @returns Scheduler
  */
-export async function DrizzlePublisher(
+export async function DrizzleScheduler(
 	opts: DrizzleConfigOpts,
-): Promise<Publisher> {
+): Promise<Scheduler> {
 	async function createStore(opts: DrizzleConfigOpts) {
 		if (opts.drizzleConfig.dialect === "mysql") {
 			return DrizzleMySQLStore(opts);
@@ -28,7 +28,7 @@ export async function DrizzlePublisher(
 
 	const store = await createStore(opts);
 	return {
-		publish(run) {
+		schedule(run) {
 			return store.store(run);
 		},
 	};

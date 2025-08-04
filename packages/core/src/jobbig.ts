@@ -1,5 +1,5 @@
-import type { Publisher } from "./publisher";
 import { Run, type RunData, type RunOpts } from "./run";
+import type { Scheduler } from "./scheduler";
 import type { Prettify } from "./utils/prettify";
 
 type RunOrFn =
@@ -8,18 +8,18 @@ type RunOrFn =
 
 interface JobbigOpts {
 	metadata?: unknown;
-	publisher: Publisher;
+	scheduler: Scheduler;
 }
 
 export function jobbig(opts: JobbigOpts) {
-	const { publisher, metadata } = opts;
+	const { scheduler, metadata } = opts;
 	return {
-		async publish(runOrFn: RunOrFn) {
+		async schedule(runOrFn: RunOrFn) {
 			const isFn = typeof runOrFn === "function";
 			const run = isFn
 				? runOrFn((data) => Run({ ...data, metadata }))
 				: runOrFn;
-			return publisher.publish(run);
+			return scheduler.schedule(run);
 		},
 		create: Run,
 	};

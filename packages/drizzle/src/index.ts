@@ -1,3 +1,3 @@
 export * from "./mysql";
 export * from "./postgres";
-export * from "./publisher";
+export * from "./scheduler";
