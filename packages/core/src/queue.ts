@@ -1,9 +1,9 @@
-import type { Run } from "./run";
+import type { RunData } from "./run";
 
 export interface QueueInfo {
 	exhausted: boolean;
 }
 export interface Queue {
-	push(run: Run): Promise<unknown>;
-	poll(amount: number): Promise<{ runs: Run[]; info: QueueInfo }>;
+	push(run: RunData): Promise<unknown>;
+	poll(amount: number): Promise<{ runs: RunData[]; info: QueueInfo }>;
 }

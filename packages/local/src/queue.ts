@@ -1,9 +1,9 @@
-import type { Queue, Run } from "@jobbig/core";
+import type { Queue, RunData } from "@jobbig/core";
 
-export function LocalQueue(initialRuns: Run[] = []): Queue {
-	const queue: Run[] = initialRuns;
+export function LocalQueue(initialRuns: RunData[] = []): Queue {
+	const queue: RunData[] = initialRuns;
 	return {
-		async push(job: Run) {
+		async push(job: RunData) {
 			return Promise.resolve(queue.push(job));
 		},
 		async poll(maxAmt: number) {

@@ -1,5 +1,5 @@
 import type { Queue } from "./queue";
-import type { Run } from "./run";
+import type { RunData } from "./run";
 import type { Store } from "./store";
 
 interface PublishOpts {
@@ -8,12 +8,12 @@ interface PublishOpts {
 }
 
 export interface Publisher {
-	publish(run: Run): Promise<void>;
+	publish(run: RunData): Promise<void>;
 }
 
 export function Publisher({ queue, store }: PublishOpts): Publisher {
 	return {
-		async publish(run: Run) {
+		async publish(run: RunData) {
 			await store.store(run);
 			await queue.push(run);
 		},

@@ -1,7 +1,7 @@
-import type { Run, Store } from "@jobbig/core";
+import type { RunData, Store } from "@jobbig/core";
 
 type State = {
-	[runId: string]: Run;
+	[runId: string]: RunData;
 };
 export function LocalStore(state: State): Store {
 	const store = state;

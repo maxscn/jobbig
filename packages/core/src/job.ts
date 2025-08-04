@@ -43,6 +43,12 @@ export const job = <T extends StandardSchemaV1>({
 	run,
 	schema,
 }: Job<T>) => {
+	if (!id || id.length === 0) {
+		throw new Error(`Job ID must be a non-empty string`);
+	}
+	if (id.length > 255) {
+		throw new Error(`Job ID must be less than 255 characters`);
+	}
 	return {
 		id,
 		run: async ({ ctx }: RunInput<T>) => {

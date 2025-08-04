@@ -1,17 +1,19 @@
+import { ulid } from "ulid";
 import type { Step } from "./step";
 import type { ScopedStore } from "./store";
 
-export interface Run {
+export interface RunData {
 	id: string;
 	jobId: string;
 	status: RunStatus;
 	scheduledAt: Date;
-	data: unknown;
-	result?: unknown;
+	data?: unknown | null;
+	metadata?: unknown | null;
+	result?: unknown | null;
 	currentStep: number;
-	startedAt?: Date;
+	startedAt?: Date | null;
 	createdAt: Date;
-	finishedAt?: Date;
+	finishedAt?: Date | null;
 }
 
 export interface Context<T> {
@@ -31,4 +33,23 @@ export type RunStatus = (typeof RunStatus)[keyof typeof RunStatus];
 
 export interface RunInput<T> {
 	ctx: Context<T>;
+}
+export type RunOpts = {
+	jobId: string;
+	data: unknown;
+	metadata: unknown;
+	scheduledAt?: Date;
+};
+
+export function Run(opts: RunOpts): RunData {
+	return {
+		id: ulid(),
+		jobId: opts.jobId,
+		data: opts.data,
+		metadata: opts.metadata,
+		status: RunStatus.PENDING,
+		scheduledAt: opts.scheduledAt || new Date(),
+		currentStep: 0,
+		createdAt: new Date(),
+	};
 }

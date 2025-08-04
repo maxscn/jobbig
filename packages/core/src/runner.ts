@@ -1,10 +1,10 @@
 import type { Job } from "./job";
-import type { Run } from "./run";
+import type { RunData } from "./run";
 import { Step } from "./step";
 import { ScopedStore, type Store } from "./store";
 
 export interface RunnerOpts {
-	run: Run;
+	run: RunData;
 	store: Store;
 	jobs: Job[];
 }

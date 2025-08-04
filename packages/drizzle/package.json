@@ -1,0 +1,32 @@
+{
+  "name": "@jobbig/drizzle",
+  "module": "./dist/index.js",
+  "type": "module",
+  "zshy": "./src/index.ts",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5",
+    "drizzle-orm": "^0.x",
+    "drizzle-kit": "^0.x"
+  },
+  "dependencies": {
+    "@jobbig/core": "workspace:*"
+  },
+  "scripts": {
+    "build": "zshy"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.cts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  }
+}
