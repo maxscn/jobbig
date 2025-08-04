@@ -20,6 +20,7 @@ export interface Context<T> {
 	data: T;
 	step: Step;
 	store: ScopedStore;
+	metadata: unknown;
 }
 
 export const RunStatus = {

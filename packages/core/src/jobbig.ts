@@ -5,8 +5,8 @@ import type { Scheduler } from "./scheduler";
 
 type JobsFromArray<T extends readonly Job[]> = T[number];
 
-interface JobbigOpts {
-	metadata?: unknown;
+interface JobbigOpts<Metadata> {
+	metadata?: Metadata;
 	scheduler: Scheduler;
 }
 
@@ -17,9 +17,10 @@ type SchemaForId<J extends Job, Id extends J["id"]> = Extract<
 
 export function jobbig<
 	T extends readonly Job[],
+	Metadata = unknown,
 	J extends Job = JobsFromArray<T>,
 	Id extends J["id"] = J["id"],
->(opts: JobbigOpts) {
+>(opts: JobbigOpts<Metadata>) {
 	const { scheduler, metadata } = opts;
 	return {
 		async schedule<SpecificId extends Id>(

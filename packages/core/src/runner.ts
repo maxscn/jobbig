@@ -37,6 +37,7 @@ export function BaseRunner({ run, store, jobs }: RunnerOpts): Runner {
 						data: run.data,
 						step,
 						store: ScopedStore(run.id, store),
+						metadata: run.metadata,
 					},
 				};
 				await job.hooks?.beforeRun?.(jobOpts);
