@@ -1,5 +1,13 @@
 # @jobbig/drizzle
 
+## 0.1.7
+
+### Patch Changes
+
+- 199bbbb: including src directories
+- Updated dependencies [199bbbb]
+  - @jobbig/core@0.1.4
+
 ## 0.1.6
 
 ### Patch Changes

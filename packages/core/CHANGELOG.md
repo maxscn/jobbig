@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.1.4
+
+### Patch Changes
+
+- 199bbbb: including src directories
+
 ## 0.1.3
 
 ### Patch Changes
