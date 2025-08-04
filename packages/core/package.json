@@ -28,7 +28,8 @@
     "ulid": "^3.0.1"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.cts",

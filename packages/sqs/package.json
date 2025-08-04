@@ -20,7 +20,8 @@
     "build:lib": "zshy"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.cts",

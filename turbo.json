@@ -14,7 +14,7 @@
     },
     "build:lib": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["src/**", "dist/**"]
     },
     "check-types": {
       "dependsOn": ["^check-types"]
