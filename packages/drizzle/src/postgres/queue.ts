@@ -9,7 +9,7 @@ interface DrizzleQueueOpts {
 	drizzleConfig: Config;
 }
 
-export async function DrizzleMySQLQueue(
+export async function DrizzlePostgresQueue(
 	opts: DrizzleQueueOpts,
 ): Promise<Queue> {
 	const db = drizzle(opts.drizzleConfig);

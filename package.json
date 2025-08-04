@@ -25,6 +25,6 @@
     "dev:watch": "turbo run dev --watch",
     "dev:watch:all": "turbo run dev --watch --all",
     "build": "turbo run build",
-    "release": "turbo run build:lib && changeset publish"
+    "release": "turbo run build:lib && changeset publish --no-git-tag"
   }
 }
