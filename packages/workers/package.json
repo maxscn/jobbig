@@ -15,7 +15,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@jobbig/core": "workspace:*"
+    "@jobbig/core": "*"
   },
   "files": [
     "dist"

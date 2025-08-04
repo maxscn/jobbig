@@ -13,7 +13,7 @@
     "drizzle-kit": "^0.x"
   },
   "dependencies": {
-    "@jobbig/core": "workspace:*"
+    "@jobbig/core": "*"
   },
   "scripts": {
     "build": "zshy"

@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "aws4fetch": "^1.0.20",
-    "@jobbig/core": "workspace:*"
+    "@jobbig/core": "*"
   },
   "scripts": {
     "build": "zshy",

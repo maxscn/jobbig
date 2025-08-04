@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "zod": "^4.0.14",
-    "@jobbig/core": "workspace:*",
-    "@jobbig/local": "workspace:*",
-    "@jobbig/workers": "workspace:*",
-    "@jobbig/sqs": "workspace:*"
+    "@jobbig/core": "*",
+    "@jobbig/local": "*",
+    "@jobbig/workers": "*",
+    "@jobbig/sqs": "*"
   }
 }
