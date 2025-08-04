@@ -1,11 +1,16 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { RunInput } from "./run";
 
-export interface Job<T extends StandardSchemaV1 = any> {
+type ValueStrings<T> = T[keyof T] extends readonly (infer U)[] ? U : string;
+
+export interface Job<
+	T extends StandardSchemaV1 = any,
+	Id extends string = string,
+> {
 	/**
 	 * Unique identifier of the jobs. Used to match handlers with runs.
 	 */
-	id: string;
+	id: Id;
 	/**
 	 * The job runner.
 	 * @param opts - The options for running the job.
@@ -38,11 +43,11 @@ export interface Job<T extends StandardSchemaV1 = any> {
 	};
 }
 
-export const job = <T extends StandardSchemaV1>({
+export const job = <T extends StandardSchemaV1, Id extends string>({
 	id,
 	run,
 	schema,
-}: Job<T>) => {
+}: Job<T, Id>) => {
 	if (!id || id.length === 0) {
 		throw new Error(`Job ID must be a non-empty string`);
 	}

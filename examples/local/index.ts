@@ -1,10 +1,10 @@
-import { job, Publisher, type Run } from "@jobbig/core";
+import { job, jobbig, Scheduler } from "@jobbig/core";
 import { sleep } from "@jobbig/core/utils";
 import { LocalQueue, LocalStore } from "@jobbig/local";
 import { ContinousWorker } from "@jobbig/workers";
 import { z } from "zod";
 
-const runs: Run[] = [
+const runs = [
 	{
 		id: "run1",
 		jobId: "job1",
@@ -39,7 +39,7 @@ const runs: Run[] = [
 
 const queue = LocalQueue([]);
 const store = LocalStore({});
-const publisher = Publisher({
+const scheduler = Scheduler({
 	queue,
 	store,
 });
@@ -85,6 +85,16 @@ const worker = ContinousWorker({
 });
 worker.start();
 
+const planner = jobbig({
+	scheduler,
+	jobs,
+});
+
+planner.schedule({
+	jobId: "job2",
+	data: { input: 1 },
+});
+
 for (const run of runs) {
-	await publisher.publish(run);
+	await planner.schedule(run);
 }

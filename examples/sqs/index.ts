@@ -1,10 +1,10 @@
-import { job, Publisher, type Run } from "@jobbig/core";
+import { job, jobbig, Scheduler } from "@jobbig/core";
 import { must, sleep } from "@jobbig/core/utils";
 import { LocalQueue, LocalStore } from "@jobbig/local";
-import { SQS, SQSWorker } from "@jobbig/sqs";
+import { SQS } from "@jobbig/sqs";
 import { z } from "zod";
 
-const runs: Run[] = [
+const runs = [
 	{
 		id: "run1",
 		jobId: "job1",
@@ -42,7 +42,7 @@ const queue = SQS({
 	queueUrl: must(process.env.QUEUE_URL, "You must provide a queue URL"),
 });
 const store = LocalStore({});
-const publisher = Publisher({
+const scheduler = Scheduler({
 	queue,
 	store,
 });
@@ -90,6 +90,15 @@ const jobs = [
 // });
 // worker.start();
 
+const planner = jobbig<typeof jobs>({
+	scheduler,
+});
+
+planner.schedule({
+	jobId: "job2",
+	data: { input: 1 },
+});
+
 for (const run of runs) {
-	await publisher.publish(run);
+	await planner.schedule(run);
 }

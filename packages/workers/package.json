@@ -1,6 +1,6 @@
 {
   "name": "@jobbig/workers",
-  "version": "0.1.5",
+  "version": "0.1.10",
   "module": "./dist/index.js",
   "zshy": "./src/index.ts",
   "type": "module",
