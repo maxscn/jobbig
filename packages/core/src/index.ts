@@ -1,4 +1,5 @@
 export * from "./job";
+export * from "./jobbig";
 export * from "./orchestrator";
 export * from "./publisher";
 export * from "./queue";
