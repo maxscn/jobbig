@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.1.3
+
+### Patch Changes
+
+- b05018a: Creating a jobbig instance for publishing events with metadata. Creating a drizzle publisher along with sql and postgres providers for drizzle.
+
 ## 0.1.2
 
 ### Patch Changes

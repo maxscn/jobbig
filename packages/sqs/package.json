@@ -1,6 +1,6 @@
 {
   "name": "@jobbig/sqs",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "module": "./dist/index.js",
   "zshy": "./src/index.ts",
   "type": "module",
