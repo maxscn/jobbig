@@ -50,14 +50,7 @@ export const baseOptions: BaseLayoutProps = {
 			url: "https://discord.gg/rWMk4avUVx",
 			text: "Discord",
 			icon: (
-				<svg
-					width="800px"
-					height="800px"
-					viewBox="0 -28.5 256 256"
-					version="1.1"
-					xmlns="http://www.w3.org/2000/svg"
-					preserveAspectRatio="xMidYMid"
-				>
+				<svg role="img" viewBox="0 0 24 24" fill="currentColor">
 					<title>discord</title>
 					<g>
 						<path
