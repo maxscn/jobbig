@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.1.17
+
+### Patch Changes
+
+- 7ab9145: Fixing SQS and drizzle provider. Still have some typing issues to deal with for the drizzle provider.
+
 ## 0.1.11
 
 ### Patch Changes
