@@ -1,9 +1,35 @@
 {
-  "id": "2fe346c5-9c9e-4618-a0d6-04c92fabdd89",
+  "id": "80d46585-8d24-4588-89f0-fd348675869b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.jobbig_migrations": {
+      "name": "jobbig_migrations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.jobbig_runs": {
       "name": "jobbig_runs",
       "schema": "",

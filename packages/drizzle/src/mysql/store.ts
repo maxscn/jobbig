@@ -1,25 +1,24 @@
 import type { Store } from "@jobbig/core";
-import type { Config } from "drizzle-kit";
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
-import { migrate } from "drizzle-orm/mysql2/migrator";
+import type { MySqlDatabase } from "drizzle-orm/mysql2";
+import { migrate } from "./migrate";
 import { runs } from "./schema";
 
 interface DrizzleMySQLStoreOpts {
-	drizzleConfig: Config;
+	db: MySqlDatabase<any, any>;
 }
 export async function DrizzleMySQLStore(
 	opts: DrizzleMySQLStoreOpts,
 ): Promise<Store> {
-	const db = drizzle(opts.drizzleConfig);
-	await migrate(db, {
-		migrationsFolder: "./migrations",
-		migrationsTable: "jobbig_migrations",
-	});
+	const db = opts.db;
+	await migrate(db);
 
 	return {
 		async store(run) {
-			await db.insert(runs).values(run);
+			await db
+				.insert(runs)
+				.values(run)
+				.onDuplicateKeyUpdate({ set: { ...run } });
 		},
 		async get(runId, key) {
 			return db

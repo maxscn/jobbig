@@ -1,5 +1,10 @@
 import { mysqlTable } from "drizzle-orm/mysql-core";
 
+export const migrations = mysqlTable("jobbig_migrations", (table) => ({
+	id: table.int("id").notNull().primaryKey().autoincrement(),
+	created_at: table.timestamp("created_at").defaultNow(),
+}));
+
 export const runs = mysqlTable("jobbig_runs", (table) => ({
 	id: table.varchar("id", { length: 26 }).primaryKey(),
 	jobId: table.varchar("job_id", { length: 255 }).notNull(),

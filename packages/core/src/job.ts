@@ -1,8 +1,6 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { RunInput } from "./run";
 
-type ValueStrings<T> = T[keyof T] extends readonly (infer U)[] ? U : string;
-
 export interface Job<
 	T extends StandardSchemaV1 = any,
 	Id extends string = string,

@@ -1,21 +1,17 @@
 import type { Store } from "@jobbig/core";
-import type { Config } from "drizzle-kit";
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { migrate } from "./migrate";
 import { runs } from "./schema";
 
 interface DrizzlePostgresStoreOpts {
-	drizzleConfig: Config;
+	db: PostgresJsDatabase;
 }
 export async function DrizzlePostgresStore(
 	opts: DrizzlePostgresStoreOpts,
 ): Promise<Store> {
-	const db = drizzle(opts.drizzleConfig);
-	await migrate(db, {
-		migrationsFolder: "./migrations",
-		migrationsTable: "jobbig_migrations",
-	});
+	const db = opts.db;
+	await migrate(db);
 
 	return {
 		store(run) {

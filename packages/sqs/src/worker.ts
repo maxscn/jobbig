@@ -11,12 +11,9 @@ export function SQSWorker({ store, payload, jobs }: SQSWorkerOpts): Worker {
 	return {
 		async start() {
 			const runs = await Promise.all(
-				payload.Records.map((record) => JSON.parse(record.body)).map((r) =>
-					store.fetch(r.id),
-				),
+				payload.Records.map((record) => JSON.parse(record.body)),
 			);
-			const filteredRuns = runs.filter((r) => r !== undefined);
-			for (const run of filteredRuns) {
+			for (const run of runs) {
 				const runner = BaseRunner({ run, store, jobs });
 				await runner.run();
 			}

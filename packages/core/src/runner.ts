@@ -43,7 +43,6 @@ export function BaseRunner({ run, store, jobs }: RunnerOpts): Runner {
 				await job.hooks?.beforeRun?.(jobOpts);
 				await job.run(jobOpts);
 				await job.hooks?.afterRun?.(jobOpts);
-
 				await store.set(run.id, "status", "success");
 			} catch (err) {
 				console.error(err);

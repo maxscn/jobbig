@@ -1,9 +1,41 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "b1c47f13-2337-4a81-97b3-7bf862f977c4",
+  "id": "61ace16a-6911-4f0c-9a13-0019141dd7f1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "jobbig_migrations": {
+      "name": "jobbig_migrations",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "jobbig_migrations_id": {
+          "name": "jobbig_migrations_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "jobbig_runs": {
       "name": "jobbig_runs",
       "columns": {

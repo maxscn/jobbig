@@ -1,6 +1,5 @@
 import type { Queue } from "@jobbig/core";
-import { must } from "@jobbig/core";
-import { AwsClient } from "aws4fetch";
+import { client } from "./aws";
 
 const MAX_DELAY_SECONDS = 900;
 
@@ -17,18 +16,8 @@ interface SQSOpts {
 	queue: Queue;
 }
 export function SQS({ queueUrl, queue }: SQSOpts): Queue {
-	const aws = new AwsClient({
-		accessKeyId: must(
-			process.env.AWS_ACCESS_KEY_ID,
-			"AWS_ACCESS_KEY_ID is not set",
-		),
-		secretAccessKey: must(
-			process.env.AWS_SECRET_ACCESS_KEY,
-			"AWS_SECRET_ACCESS_KEY is not set",
-		),
-		region: must(process.env.AWS_REGION, "AWS_REGION is not set"),
-	});
 	async function sendMessage(payload: any) {
+		const aws = await client();
 		const res = await aws.fetch(`https://sqs.${aws.region}.amazonaws.com`, {
 			method: "POST",
 			headers: {

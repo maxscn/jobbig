@@ -1,5 +1,10 @@
 import { pgTable } from "drizzle-orm/pg-core";
 
+export const migrations = pgTable("jobbig_migrations", (table) => ({
+	id: table.serial("id").notNull().primaryKey(),
+	created_at: table.timestamp("created_at").defaultNow(),
+}));
+
 export const runs = pgTable("jobbig_runs", (table) => ({
 	id: table.varchar("id", { length: 26 }).primaryKey(),
 	jobId: table.varchar("job_id", { length: 255 }).notNull(),

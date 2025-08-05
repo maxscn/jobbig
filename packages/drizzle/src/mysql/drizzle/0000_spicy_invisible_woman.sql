@@ -1,3 +1,9 @@
+CREATE TABLE `jobbig_migrations` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`created_at` timestamp DEFAULT (now()),
+	CONSTRAINT `jobbig_migrations_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `jobbig_runs` (
 	`id` varchar(26) NOT NULL,
 	`job_id` varchar(255) NOT NULL,

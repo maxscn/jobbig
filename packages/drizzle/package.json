@@ -2,8 +2,14 @@
   "name": "@jobbig/drizzle",
   "module": "./dist/index.js",
   "type": "module",
-  "version": "0.1.10",
-  "zshy": "./src/index.ts",
+  "version": "0.1.16",
+  "zshy": {
+    "exports": {
+      ".": "./src/index.ts",
+      "./postgres": "./src/postgres/index.ts",
+      "./mysql": "./src/mysql/index.ts"
+    }
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
@@ -13,7 +19,9 @@
     "drizzle-kit": "^0.x"
   },
   "dependencies": {
-    "@jobbig/core": "*"
+    "@jobbig/core": "*",
+    "mysql2": "^3.14.3",
+    "postgres-js": "^0.1.0"
   },
   "scripts": {
     "build": "zshy"
@@ -29,6 +37,16 @@
       "types": "./dist/index.d.cts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./postgres": {
+      "types": "./dist/postgres/index.d.cts",
+      "import": "./dist/postgres/index.js",
+      "require": "./dist/postgres/index.cjs"
+    },
+    "./mysql": {
+      "types": "./dist/mysql/index.d.cts",
+      "import": "./dist/mysql/index.js",
+      "require": "./dist/mysql/index.cjs"
     }
   }
 }

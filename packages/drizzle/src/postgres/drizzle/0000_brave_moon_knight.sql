@@ -1,3 +1,8 @@
+CREATE TABLE "jobbig_migrations" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"created_at" timestamp DEFAULT now()
+);
+--> statement-breakpoint
 CREATE TABLE "jobbig_runs" (
 	"id" varchar(26) PRIMARY KEY NOT NULL,
 	"job_id" varchar(255) NOT NULL,

@@ -16,7 +16,7 @@ type SchemaForId<J extends Job, Id extends J["id"]> = Extract<
 >["schema"];
 
 export function jobbig<
-	T extends readonly Job[],
+	T extends readonly Job[] = any,
 	Metadata = unknown,
 	J extends Job = JobsFromArray<T>,
 	Id extends J["id"] = J["id"],

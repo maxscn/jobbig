@@ -1,8 +1,9 @@
 import { job, jobbig, Scheduler } from "@jobbig/core";
-import { must, sleep } from "@jobbig/core/utils";
-import { LocalQueue, LocalStore } from "@jobbig/local";
-import { SQS } from "@jobbig/sqs";
+import { sleep } from "@jobbig/core/utils";
+import { DrizzleMySQLQueue, DrizzleMySQLStore } from "@jobbig/drizzle/mysql";
+import { ContinuousWorker } from "@jobbig/workers";
 import { z } from "zod";
+import config from "./drizzle.config";
 
 const runs = [
 	{
@@ -22,7 +23,7 @@ const runs = [
 			input: 1,
 			output: 2,
 		},
-		scheduledAt: new Date(Date.now() + 5000),
+		scheduledAt: new Date(Date.now() + 10000),
 		status: "pending",
 		createdAt: new Date(),
 	},
@@ -31,17 +32,14 @@ const runs = [
 		jobId: "job2",
 		currentStep: 1,
 		data: {},
-		scheduledAt: new Date(Date.now() + 10000),
+		scheduledAt: new Date(Date.now() + 20000),
 		status: "pending",
 		createdAt: new Date(),
 	},
 ] as const;
 
-const queue = SQS({
-	queue: LocalQueue([]),
-	queueUrl: must(process.env.QUEUE_URL, "You must provide a queue URL"),
-});
-const store = LocalStore({});
+const queue = await DrizzleMySQLQueue({ drizzleConfig: config });
+const store = await DrizzleMySQLStore({ drizzleConfig: config });
 const scheduler = Scheduler({
 	queue,
 	store,
@@ -81,25 +79,20 @@ const jobs = [
 	}),
 ];
 
+const worker = ContinuousWorker({
+	queue,
+	store,
+	jobs: jobs,
+});
+worker.start();
+
 const planner = jobbig<typeof jobs>({
 	scheduler,
 });
-
 planner.schedule({
 	jobId: "job2",
-	data: { input: 1 },
+	data: {},
 });
-
 for (const run of runs) {
 	await planner.schedule(run);
 }
-
-// Run this code in a lambda or whatever is connected to your queue
-import { SQSWorker } from "@jobbig/sqs";
-
-const worker = SQSWorker({
-	payload: { Records: [] },
-	store,
-	jobs,
-});
-worker.start();
