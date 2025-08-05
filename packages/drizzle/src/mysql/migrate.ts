@@ -12,7 +12,9 @@ export async function migrate(db: MySqlDatabase<any, any>) {
 		.catch(() => 0);
 
 	for (const migration of migrations.slice(step)) {
-		await db.execute(migration);
-		await db.insert(migrationsTable).values({ created_at: new Date() });
+		db.transaction(async (tx) => {
+			await tx.execute(migration);
+			await tx.insert(migrationsTable).values({ created_at: new Date() });
+		});
 	}
 }

@@ -8,10 +8,13 @@ export function CronWorker(opts: OrchestratorOpts): Worker {
 	return {
 		async start() {
 			let exhausted: boolean;
+			let running: Promise<void>[];
 			do {
-				const info = await poll();
+				const { running: rs, info } = await poll();
 				exhausted = info.exhausted;
+				running = rs;
 			} while (!exhausted);
+			await Promise.all(running);
 		},
 	};
 }

@@ -1,5 +1,5 @@
 import type { Store } from "@jobbig/core";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { migrate } from "./migrate";
 import { runs } from "./schema";
@@ -42,6 +42,30 @@ export async function DrizzlePostgresStore(
 					if (rows.length === 0) return undefined;
 					return rows?.[0];
 				});
+		},
+		async lock(runId) {
+			const rows = await db.transaction((tx) =>
+				tx
+					.update(runs)
+					.set({ status: "running", startedAt: new Date() })
+					.where(and(eq(runs.id, runId), eq(runs.status, "pending"))),
+			);
+			return rows.length > 0;
+		},
+		async unlock(runId) {
+			const rows = await db.transaction(async (tx) =>
+				tx
+					.update(runs)
+					.set({ status: "pending", startedAt: null })
+					.where(and(eq(runs.id, runId), eq(runs.status, "running"))),
+			);
+			return rows.length > 0;
+		},
+		async isLocked(runId) {
+			const rows = await db.transaction(async (tx) =>
+				tx.select({ status: runs.status }).from(runs).where(eq(runs.id, runId)),
+			);
+			return rows.length > 0 && rows?.[0]?.status === "running";
 		},
 	};
 }

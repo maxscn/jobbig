@@ -6,12 +6,14 @@ import { runs } from "./schema";
 
 interface DrizzleQueueOpts {
 	db: PostgresJsDatabase;
+	margin?: number;
 }
 
 export async function DrizzlePostgresQueue(
 	opts: DrizzleQueueOpts,
 ): Promise<Queue> {
 	const db = opts.db;
+	const margin = opts.margin ?? 0;
 	await migrate(db);
 
 	return {
@@ -21,7 +23,10 @@ export async function DrizzlePostgresQueue(
 				.from(runs)
 				.limit(amount + 1)
 				.where(
-					and(eq(runs.status, "pending"), lte(runs.scheduledAt, new Date())),
+					and(
+						eq(runs.status, "pending"),
+						lte(runs.scheduledAt, new Date(Date.now() + margin)),
+					),
 				);
 			const exhausted = rows.length <= amount;
 			return { runs: rows, info: { exhausted } };

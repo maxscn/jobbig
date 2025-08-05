@@ -16,8 +16,8 @@ export interface Store {
 		key: T,
 	): Promise<RunData[T] | undefined>;
 	fetch(runId: string): Promise<RunData | undefined>;
-	lock(runId: string): Promise<void>;
-	unlock(runId: string): Promise<void>;
+	lock(runId: string): Promise<boolean>;
+	unlock(runId: string): Promise<boolean>;
 	isLocked(runId: string): Promise<boolean>;
 }
 

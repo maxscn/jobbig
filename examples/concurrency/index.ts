@@ -76,6 +76,13 @@ const jobs = [
 			output: z.number().min(1).max(100).optional(),
 		}),
 	}),
+	job({
+		id: "job3",
+		run: async ({ ctx }) => {
+			await sleep(10000 * Math.random());
+		},
+		schema: z.undefined(),
+	}),
 ];
 
 const worker = ContinuousWorker({
@@ -88,12 +95,9 @@ worker.start();
 const planner = jobbig<typeof jobs>({
 	scheduler,
 });
-
-planner.schedule({
-	jobId: "job2",
-	data: { input: 1 },
-});
-
-for (const run of runs) {
-	await planner.schedule(run);
+for (let i = 0; i < 1000; i++) {
+	planner.schedule({
+		jobId: "job3",
+		data: undefined,
+	});
 }

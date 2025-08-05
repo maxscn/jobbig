@@ -15,11 +15,10 @@ export interface Runner {
 export function BaseRunner({ run, store, jobs }: RunnerOpts): Runner {
 	return {
 		async run() {
-			const status = await store.get(run.id, "status");
-			if (status !== "pending") {
+			const lock = await store.lock(run.id);
+			if (!lock) {
 				return;
 			}
-			await store.set(run.id, "status", "running"); // TODO: have to make sure this is atomic
 			const job = jobs.find((job) => job.id === run.jobId);
 			if (!job) {
 				console.log("no job matches the run");
@@ -43,9 +42,13 @@ export function BaseRunner({ run, store, jobs }: RunnerOpts): Runner {
 				await job.hooks?.beforeRun?.(jobOpts);
 				await job.run(jobOpts);
 				await job.hooks?.afterRun?.(jobOpts);
+				// Consider if we want a complete function to do both of these.
 				await store.set(run.id, "status", "success");
+				await store.set(run.id, "finishedAt", new Date());
 			} catch (err) {
 				console.error(err);
+				//TODO: If this is retryable we might want to do something else.
+				// We might eventually want to separate the status of the job logic from the actual run, for easier rescheduling.
 				await store.set(run.id, "status", "failure");
 			} finally {
 				await step.cleanup();

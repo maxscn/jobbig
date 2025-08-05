@@ -12,9 +12,9 @@ export async function migrate(db: PostgresJsDatabase<Record<string, unknown>>) {
 		.catch(() => 0);
 
 	for (const migration of migrations.slice(step)) {
-		await db.execute(migration);
-		await db.execute(
-			sql`insert into jobbig_migrations (created_at) values (now())`,
-		);
+		db.transaction(async (tx) => {
+			await tx.execute(migration);
+			await tx.insert(migrationsTable).values({ created_at: new Date() });
+		});
 	}
 }
