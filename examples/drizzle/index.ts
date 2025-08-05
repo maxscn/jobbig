@@ -2,8 +2,8 @@ import { job, jobbig, Scheduler } from "@jobbig/core";
 import { sleep } from "@jobbig/core/utils";
 import { DrizzleMySQLQueue, DrizzleMySQLStore } from "@jobbig/drizzle/mysql";
 import { ContinuousWorker } from "@jobbig/workers";
+import { drizzle } from "drizzle-orm/mysql2";
 import { z } from "zod";
-import config from "./drizzle.config";
 
 const runs = [
 	{
@@ -38,8 +38,14 @@ const runs = [
 	},
 ] as const;
 
-const queue = await DrizzleMySQLQueue({ drizzleConfig: config });
-const store = await DrizzleMySQLStore({ drizzleConfig: config });
+const queue = await DrizzleMySQLQueue({
+	db: drizzle(process.env.DATABASE_URL!),
+	dialect: "mysql",
+});
+const store = await DrizzleMySQLStore({
+	db: drizzle(process.env.DATABASE_URL!),
+	dialect: "mysql",
+});
 const scheduler = Scheduler({
 	queue,
 	store,

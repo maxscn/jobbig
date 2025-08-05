@@ -19,7 +19,7 @@ export function BaseRunner({ run, store, jobs }: RunnerOpts): Runner {
 			if (status !== "pending") {
 				return;
 			}
-			await store.set(run.id, "status", "running");
+			await store.set(run.id, "status", "running"); // TODO: have to make sure this is atomic
 			const job = jobs.find((job) => job.id === run.jobId);
 			if (!job) {
 				console.log("no job matches the run");

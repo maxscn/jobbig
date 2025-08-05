@@ -1,7 +1,7 @@
 import { job, jobbig, Scheduler } from "@jobbig/core";
 import { sleep } from "@jobbig/core/utils";
 import { LocalQueue, LocalStore } from "@jobbig/local";
-import { ContinousWorker } from "@jobbig/workers";
+import { ContinuousWorker } from "@jobbig/workers";
 import { z } from "zod";
 
 const runs = [
@@ -57,6 +57,7 @@ const jobs = [
 	job({
 		id: "job2",
 		run: async ({ ctx }) => {
+			throw new Error("Job 2 failed");
 			console.log("Running job 2...");
 			await ctx.step.run("step1", async () => {
 				console.log("Running step 1...");
@@ -78,16 +79,15 @@ const jobs = [
 	}),
 ];
 
-const worker = ContinousWorker({
+const worker = ContinuousWorker({
 	queue,
 	store,
 	jobs: jobs,
 });
 worker.start();
 
-const planner = jobbig({
+const planner = jobbig<typeof jobs>({
 	scheduler,
-	jobs,
 });
 
 planner.schedule({

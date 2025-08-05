@@ -11,6 +11,7 @@ export function LocalStore(state: State): Store {
 			if (!store?.[runId]) {
 				throw new Error(`Run ${runId} does not exist`);
 			}
+			console.log(`setting ${runId}.${key} = ${value}`);
 			store[runId] = { ...store[runId], [key]: value };
 		},
 		async get(runId, key) {

@@ -1,10 +1,24 @@
 import type { RunData } from "./run";
 
+export interface StudioStore extends Store {
+	list(lastKey: string | number): Promise<RunData[]>;
+}
+
 export interface Store {
 	store(run: RunData): Promise<void>;
-	set<T extends keyof RunData>(runId: string, key: T, value: RunData[T]): Promise<void>;
-	get<T extends keyof RunData>(runId: string, key: T): Promise<RunData[T] | undefined>;
+	set<T extends keyof RunData>(
+		runId: string,
+		key: T,
+		value: RunData[T],
+	): Promise<void>;
+	get<T extends keyof RunData>(
+		runId: string,
+		key: T,
+	): Promise<RunData[T] | undefined>;
 	fetch(runId: string): Promise<RunData | undefined>;
+	lock(runId: string): Promise<void>;
+	unlock(runId: string): Promise<void>;
+	isLocked(runId: string): Promise<boolean>;
 }
 
 export interface ScopedStore {
