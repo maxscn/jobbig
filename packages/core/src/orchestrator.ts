@@ -4,7 +4,6 @@ import { BaseRunner } from "./runner";
 import type { Store } from "./store";
 
 const DEFAULT_CONCURRENCY = 50;
-const BREAK_TIME = 1000;
 
 export interface OrchestratorOpts {
 	concurrency?: number;
