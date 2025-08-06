@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.1.20
+
+### Patch Changes
+
+- 6822c95: Export plugins
+
 ## 0.1.19
 
 ### Patch Changes
