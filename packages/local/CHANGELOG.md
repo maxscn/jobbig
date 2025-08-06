@@ -1,5 +1,13 @@
 # @jobbig/local
 
+## 0.1.18
+
+### Patch Changes
+
+- c7c2bb1: Concurrency for runner
+- Updated dependencies [c7c2bb1]
+  - @jobbig/core@0.1.18
+
 ## 0.1.17
 
 ### Patch Changes

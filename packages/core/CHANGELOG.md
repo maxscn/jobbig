@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.1.18
+
+### Patch Changes
+
+- c7c2bb1: Concurrency for runner
+
 ## 0.1.17
 
 ### Patch Changes
