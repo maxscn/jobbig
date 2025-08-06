@@ -4,11 +4,15 @@ import { SQS, SQSWorker } from "../sqs";
 
 interface SQSPluginProps {
 	queueUrl: string;
+	pollAmount?: number;
 }
-export function SQSPlugin({ queueUrl }: SQSPluginProps) {
+export function SQSPlugin({ queueUrl, pollAmount = 100 }: SQSPluginProps) {
 	return (instance: JobbigInstance) => ({
-		handler: (payload: SQSEvent) =>
-			SQSWorker({ jobbig: instance, payload }).start(),
-		cron: () => SQS({ queueUrl, store: instance.store }),
+		handler: (payload: SQSEvent) => {
+			return SQSWorker({ jobbig: instance, payload }).start();
+		},
+		cron: () => {
+			return SQS({ queueUrl, store: instance.store }).poll(pollAmount);
+		},
 	});
 }
