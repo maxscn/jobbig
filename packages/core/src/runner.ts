@@ -1,9 +1,8 @@
 import { ulid } from "ulid";
-import type { JobType } from "./job";
 import type { JobbigInstance } from "./jobbig";
 import type { RunData } from "./run";
 import { Step } from "./step";
-import { ScopedStore, type Store } from "./store";
+import { ScopedStore } from "./store";
 import { sleep } from "./utils/sleep";
 
 const MAX_INTERNAL_SLEEP_MS = 100000;

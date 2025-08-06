@@ -1,6 +1,6 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import { Job, type JobType } from "./job";
-import { Run, type RunOpts } from "./run";
+import { Run, type RunInput, type RunOpts } from "./run";
 import type { Store } from "./store";
 
 export type JobsFromArray<T extends readonly JobType[]> = T[number];
@@ -16,9 +16,14 @@ type SchemaForId<J extends JobType, Id extends J["id"]> = Extract<
 	{ id: Id }
 >["schema"];
 
-type Plugin<NewPlugins, T, Metadata, J, Id, Plugins> = (
-	instance: JobbigInstance<T, Metadata, J, Id, Plugins>,
-) => NewPlugins;
+type Plugin<
+	NewPlugins extends Record<string, any>,
+	T extends readonly JobType[],
+	Metadata,
+	J extends JobType,
+	Id extends J["id"],
+	Plugins extends Record<string, any>,
+> = (instance: JobbigInstance<T, Metadata, J, Id, Plugins>) => NewPlugins;
 
 export function Jobbig<
 	T extends readonly JobType[],
@@ -32,7 +37,7 @@ export function Jobbig<
 		[];
 
 	const baseInstance = {
-		async schedule<SpecificId extends Id>(
+		async schedule<SpecificId extends Id = Id>(
 			run: Omit<
 				RunOpts<
 					SpecificId,
@@ -61,56 +66,66 @@ export function Jobbig<
 		},
 		create: Run,
 		use<NewPlugins extends Record<string, any>>(
-			plugin: (
-				instance: JobbigInstance<T, Metadata, J, Id, Plugins>,
-			) => NewPlugins,
+			plugin: (instance: JobbigInstance<any, any, any, any, any>) => NewPlugins,
 		): JobbigInstance<T, Metadata, J, Id, Plugins & NewPlugins> {
-			plugins.push(plugin);
-			const newMethods = plugin(this as any);
-			return Object.assign({}, this, newMethods) as any;
+			const newMethods = plugin(this);
+			return Object.assign({}, this, newMethods) as JobbigInstance<
+				T,
+				Metadata,
+				J,
+				Id,
+				Plugins & NewPlugins
+			>;
 		},
-		handle<
-			TSchema extends StandardSchemaV1,
-			Id extends string,
-			const NewJob extends JobType<TSchema, Id>,
-		>(
-			job: NewJob,
-		): JobbigInstance<
-			[...T, NewJob],
-			Metadata,
-			J | NewJob,
-			Id | NewJob["id"],
-			Plugins
-		> {
-			const newJobs = [...jobs, Job(job) as NewJob] as const;
-			let instance = Jobbig({
-				jobs: newJobs,
-				store,
-				metadata,
-			});
+		init(opts: JobbigOpts<J, Metadata>) {
+			let instance = Jobbig(opts);
 			for (const plugin of plugins) {
-				instance = instance.use(plugin);
+				instance = instance.use(plugin as Plugin<any, any, any, any, any, any>);
 			}
 			return instance;
 		},
-	};
-
-	return baseInstance as JobbigInstance<T, Metadata, J, Id, Plugins>;
+		handle<TSchema extends StandardSchemaV1, Id extends string>(job: {
+			id: Id;
+			schema: TSchema;
+			run: (
+				opts: RunInput<StandardSchemaV1.InferInput<TSchema>>,
+			) => Promise<void>;
+			metadata?: Metadata;
+		}) {
+			const j = Job({ ...job }) as Readonly<JobType<TSchema, Id>>;
+			const newJobs = [...jobs, j] as const;
+			return this.init({
+				//@ts-ignore
+				jobs: newJobs,
+				store,
+				metadata: metadata ?? opts.metadata,
+			}) as JobbigInstance<
+				[...T, JobType<TSchema, Id>],
+				Metadata,
+				J | JobType<TSchema, Id>,
+				Id | JobType<TSchema, Id>["id"],
+				Plugins
+			>;
+		},
+	} as JobbigInstance<T, Metadata, J, Id, Plugins>;
+	return baseInstance;
 }
 
 // Type definition for the Jobbig instance
 export type JobbigInstance<
-	T extends readonly JobType[] = any,
+	T extends readonly JobType[] = JobType[],
 	Metadata = unknown,
 	J extends JobType = JobsFromArray<T>,
 	Id extends J["id"] = J["id"],
 	Plugins extends Record<string, any> = {},
 > = {
-	schedule<SpecificId extends Id>(
+	schedule<SpecificId extends string>(
 		run: Omit<
 			RunOpts<
 				SpecificId,
-				StandardSchemaV1.InferInput<SchemaForId<J, SpecificId>>
+				SpecificId extends Id
+					? StandardSchemaV1.InferInput<SchemaForId<J, SpecificId>>
+					: any
 			>,
 			"metadata"
 		>,
@@ -119,6 +134,12 @@ export type JobbigInstance<
 	create: typeof Run;
 	get jobs(): J[];
 	get store(): Store;
+	replacePlugin(
+		plugin: Plugin<any, T, Metadata, J, Id, Plugins>,
+	): JobbigInstance<T, Metadata, J, Id, Plugins>;
+	init(
+		opts: JobbigOpts<J, Metadata>,
+	): JobbigInstance<T, Metadata, J, Id, Plugins>;
 	use<NewPlugins extends Record<string, any>>(
 		plugin: Plugin<NewPlugins, T, Metadata, J, Id, Plugins>,
 	): JobbigInstance<T, Metadata, J, Id, Plugins & NewPlugins>;

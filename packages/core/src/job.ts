@@ -45,7 +45,7 @@ export const Job = <const T extends StandardSchemaV1, const Id extends string>({
 	id,
 	run,
 	schema,
-}: JobType<T, Id>) => {
+}: Readonly<JobType<T, Id>>) => {
 	if (!id || id.length === 0) {
 		throw new Error(`Job ID must be a non-empty string`);
 	}
