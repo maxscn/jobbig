@@ -4,8 +4,13 @@ export interface StudioStore extends Store {
 	list(lastKey: string | number): Promise<RunData[]>;
 }
 
+export interface QueueInfo {
+	exhausted: boolean;
+}
+
 export interface Store {
-	store(run: RunData): Promise<void>;
+	push(run: RunData): Promise<void>;
+	poll(amt: number): Promise<{ runs: RunData[]; info: QueueInfo }>;
 	set<T extends keyof RunData>(
 		runId: string,
 		key: T,

@@ -19,7 +19,7 @@ export const runs = pgTable("jobbig_runs", (table) => ({
 	data: table.jsonb("data"),
 	metadata: table.jsonb("metadata"),
 	result: table.jsonb("result"),
-	retry: table.integer("retry").default(0),
+	attempt: table.integer("retry").default(0),
 	currentStep: table.integer("current_step").notNull().default(0),
 	startedAt: table.timestamp("started_at"),
 	createdAt: table.timestamp("created_at").notNull().defaultNow(),

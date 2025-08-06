@@ -1,7 +1,7 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { RunInput } from "./run";
 
-export interface Job<
+export interface JobType<
 	T extends StandardSchemaV1 = any,
 	Id extends string = string,
 > {
@@ -41,11 +41,11 @@ export interface Job<
 	};
 }
 
-export const job = <T extends StandardSchemaV1, Id extends string>({
+export const Job = <const T extends StandardSchemaV1, const Id extends string>({
 	id,
 	run,
 	schema,
-}: Job<T, Id>) => {
+}: JobType<T, Id>) => {
 	if (!id || id.length === 0) {
 		throw new Error(`Job ID must be a non-empty string`);
 	}
@@ -54,16 +54,16 @@ export const job = <T extends StandardSchemaV1, Id extends string>({
 	}
 	return {
 		id,
-		run: async ({ ctx }: RunInput<T>) => {
-			let result = schema["~standard"].validate(ctx.data);
+		run: async (opts: RunInput<T>) => {
+			let result = schema["~standard"].validate(opts.ctx.data);
 			if (result instanceof Promise) result = await result;
 
 			// if the `issues` field exists, the validation failed
 			if (result.issues) {
 				throw new Error(JSON.stringify(result.issues, null, 2));
 			}
-			return run({ ctx });
+			return run(opts);
 		},
 		schema,
-	};
+	} as JobType<T, Id>;
 };

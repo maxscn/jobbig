@@ -1,18 +1,25 @@
-import type { Job } from "./job";
+import { ulid } from "ulid";
+import type { JobType } from "./job";
+import type { JobbigInstance } from "./jobbig";
 import type { RunData } from "./run";
 import { Step } from "./step";
 import { ScopedStore, type Store } from "./store";
+import { sleep } from "./utils/sleep";
 
+const MAX_INTERNAL_SLEEP_MS = 100000;
 export interface RunnerOpts {
 	run: RunData;
-	store: Store;
-	jobs: Job[];
+	jobbig: JobbigInstance;
 }
 export interface Runner {
 	run(): Promise<void>;
 }
 
-export function BaseRunner({ run, store, jobs }: RunnerOpts): Runner {
+class AbortError extends Error {}
+
+export function BaseRunner({ run, jobbig }: RunnerOpts): Runner {
+	const store = jobbig.store;
+	const jobs = jobbig.jobs;
 	return {
 		async run() {
 			const lock = await store.lock(run.id);
@@ -37,6 +44,24 @@ export function BaseRunner({ run, store, jobs }: RunnerOpts): Runner {
 						step,
 						store: ScopedStore(run.id, store),
 						metadata: run.metadata,
+						schedule: jobbig.schedule,
+						sleep: async (ms: number) =>
+							step.run(`sleep-${ms}-${ulid()}`, async () => {
+								if (ms > MAX_INTERNAL_SLEEP_MS) {
+									await store.set(
+										run.id,
+										"scheduledAt",
+										new Date(Date.now() + ms),
+									);
+									const current = await store.fetch(run.id);
+									if (current) {
+										await store.push(current);
+									}
+									throw new AbortError("rest of the run aborted");
+								} else {
+									await sleep(ms);
+								}
+							}),
 					},
 				};
 				await job.hooks?.beforeRun?.(jobOpts);
@@ -49,7 +74,11 @@ export function BaseRunner({ run, store, jobs }: RunnerOpts): Runner {
 				console.error(err);
 				//TODO: If this is retryable we might want to do something else.
 				// We might eventually want to separate the status of the job logic from the actual run, for easier rescheduling.
-				await store.set(run.id, "status", "failure");
+				if (err instanceof AbortError) {
+					await store.unlock(run.id);
+				} else {
+					await store.set(run.id, "status", "failure");
+				}
 			} finally {
 				await step.cleanup();
 			}

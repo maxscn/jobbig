@@ -14,13 +14,39 @@ export interface RunData {
 	startedAt?: Date | null;
 	createdAt: Date;
 	finishedAt?: Date | null;
+	attempt?: number | null;
 }
 
 export interface Context<T> {
+	/**
+	 * Data contained within the run.
+	 */
 	data: T;
+	/**
+	 * Function to run steps. These do not rerun on retries or after sleeping.
+	 */
 	step: Step;
+	/**
+	 * Store which you can use to interact with the run.
+	 */
 	store: ScopedStore;
+	/**
+	 * Metadata connected to the jobbig-instance
+	 */
 	metadata: unknown;
+	/**
+	 * Sleep for a given amount of time in milliseconds. If under a threshold (100s) it will use setTimeout, otherwise it will schedule execution to be at a later time.
+	 * This is treated as a step and not rerun.
+	 * @param ms time to sleep in milliseconds
+	 * @returns
+	 */
+	sleep: (ms: number) => Promise<void>;
+	/**
+	 * Schedule a new run
+	 * @param run The data of the new run
+	 * @returns
+	 */
+	schedule: (run: RunData) => Promise<void>;
 }
 
 export const RunStatus = {

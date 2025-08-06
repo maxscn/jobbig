@@ -1,8 +1,11 @@
 import { desc, sql } from "drizzle-orm";
-import type { MySqlDatabase } from "drizzle-orm/mysql2";
+import type { MySql2Database, MySqlDatabase } from "drizzle-orm/mysql2";
+import type { PlanetScaleDatabase } from "drizzle-orm/planetscale-serverless";
 import { migrations } from "./migrations";
 import { migrations as migrationsTable } from "./schema";
-export async function migrate(db: MySqlDatabase<any, any>) {
+export async function migrate(
+	db: MySqlDatabase<any, any> | PlanetScaleDatabase<any> | MySql2Database<any>,
+) {
 	const step = await db
 		.select()
 		.from(migrationsTable)

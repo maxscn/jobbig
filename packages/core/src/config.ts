@@ -1,8 +1,6 @@
-import type { Queue } from "./queue";
 import type { Store } from "./store";
 
 export interface Config {
-	queue: Queue;
 	store: Store;
 }
 

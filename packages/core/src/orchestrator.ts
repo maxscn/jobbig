@@ -1,15 +1,19 @@
-import type { Job } from "./job";
-import type { Queue, QueueInfo } from "./queue";
+import type { JobType } from "./job";
+import type { JobbigInstance, JobsFromArray } from "./jobbig";
 import { BaseRunner } from "./runner";
-import type { Store } from "./store";
+import type { QueueInfo } from "./store";
 
 const DEFAULT_CONCURRENCY = 50;
 
-export interface OrchestratorOpts {
+export interface OrchestratorOpts<
+	T extends readonly JobType[] = any,
+	Metadata = unknown,
+	J extends JobType = JobsFromArray<T>,
+	Id extends J["id"] = J["id"],
+	Plugins extends Record<string, any> = {},
+> {
 	concurrency?: number;
-	queue: Queue;
-	store: Store;
-	jobs: Job[];
+	jobbig: JobbigInstance<T, Metadata, J, Id, Plugins>;
 }
 
 export type Orchestrator = (
@@ -18,21 +22,20 @@ export type Orchestrator = (
 
 export const BaseOrchestrator: Orchestrator = (opts: OrchestratorOpts) => {
 	const concurrency = opts.concurrency ?? DEFAULT_CONCURRENCY;
-	const queue = opts.queue;
-	const store = opts.store;
-	const jobs = opts.jobs;
+	const jobbig = opts.jobbig;
+	const store = jobbig.store;
 	let running: WrappedPromise<void>[] = [];
 	return async () => {
 		running = running.filter((r) => !r.isDone);
 		console.log(`Running ${running.length} jobs`);
 		console.log(`Waiting for ${concurrency - running.length} jobs`);
-		const { runs, info } = await queue.poll(concurrency - running.length);
+		const { runs, info } = await store.poll(concurrency - running.length);
 		if (!runs || runs.length === 0) {
 			console.log("no runs found");
 			return { info, running };
 		}
 		for (const run of runs) {
-			const runner = BaseRunner({ run, store, jobs });
+			const runner = BaseRunner({ run, jobbig });
 			running.push(WrappedPromise(runner.run()));
 		}
 		// At least one promise should be done before the next poll

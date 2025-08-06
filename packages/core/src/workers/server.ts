@@ -1,8 +1,4 @@
-import {
-	BaseOrchestrator,
-	type OrchestratorOpts,
-	type Worker,
-} from "@jobbig/core";
+import { BaseOrchestrator, type OrchestratorOpts, type Worker } from "../";
 
 const DEFAULT_POLL_INTERVAL = 1000;
 

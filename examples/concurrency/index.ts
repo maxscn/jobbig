@@ -1,55 +1,22 @@
-import { job, jobbig, Scheduler } from "@jobbig/core";
-import { sleep } from "@jobbig/core/utils";
-import { LocalQueue, LocalStore } from "@jobbig/local";
-import { ContinuousWorker } from "@jobbig/workers";
+import {
+	EventPlugin,
+	event,
+	Job,
+	Jobbig,
+	ServerPlugin,
+	sleep,
+} from "@jobbig/core";
+import { LocalStore } from "@jobbig/local";
 import { z } from "zod";
 
-const runs = [
-	{
-		id: "run1",
-		jobId: "job1",
-		currentStep: 0,
-		data: {},
-		scheduledAt: new Date(),
-		status: "pending",
-		createdAt: new Date(),
-	},
-	{
-		id: "run2",
-		jobId: "job2",
-		currentStep: 0,
-		data: {
-			input: 1,
-			output: 2,
-		},
-		scheduledAt: new Date(Date.now() + 5000),
-		status: "pending",
-		createdAt: new Date(),
-	},
-	{
-		id: "run3",
-		jobId: "job2",
-		currentStep: 1,
-		data: {},
-		scheduledAt: new Date(Date.now() + 10000),
-		status: "pending",
-		createdAt: new Date(),
-	},
-] as const;
-
-const queue = LocalQueue([]);
 const store = LocalStore({});
-const scheduler = Scheduler({
-	queue,
-	store,
-});
 
 const jobs = [
 	job({
 		id: "job1",
-		run: async () => {
+		run: async ({ ctx }) => {
 			console.log("Running job 1...");
-			await sleep(1000);
+			await ctx.sleep(1000);
 			console.log("Job 1 completed.");
 		},
 		schema: z.object(),
@@ -60,15 +27,15 @@ const jobs = [
 			console.log("Running job 2...");
 			await ctx.step.run("step1", async () => {
 				console.log("Running step 1...");
-				await sleep(1000);
+				await ctx.sleep(1000);
 				console.log("Step 1 completed.");
 			});
 			await ctx.step.run("step2", async () => {
 				console.log("Running step 2...");
-				await sleep(1000);
+				await ctx.sleep(1000);
 				console.log("Step 2 completed.");
 			});
-			await sleep(1000);
+			await ctx.sleep(1000);
 			console.log("Job 2 completed.");
 		},
 		schema: z.object({
@@ -76,28 +43,41 @@ const jobs = [
 			output: z.number().min(1).max(100).optional(),
 		}),
 	}),
-	job({
+	Job({
 		id: "job3",
 		run: async ({ ctx }) => {
-			await sleep(10000 * Math.random());
+			await ctx.sleep(10000 * Math.random());
 		},
 		schema: z.undefined(),
 	}),
 ];
 
-const worker = ContinuousWorker({
-	queue,
+// Instansiate store and provide the job registry
+const jobbig = Jobbig({
 	store,
-	jobs: jobs,
-});
-worker.start();
-
-const planner = jobbig<typeof jobs>({
-	scheduler,
-});
-for (let i = 0; i < 1000; i++) {
-	planner.schedule({
-		jobId: "job3",
-		data: undefined,
+})
+	.use(ServerPlugin)
+	.use(EventPlugin())
+	.handle({
+		type: "user.created",
+		schema: z.object({
+			id: z.string(),
+			email: z.email(),
+			name: z.string().min(2).max(100),
+		}),
+		handler: async ({ ctx }) => {
+			console.log("Handling user.created event:", ctx);
+		},
 	});
-}
+
+jobbig.publish({
+	type: "user.created",
+	payload: {
+		id: "123",
+		email: "test@example.com",
+		name: "John Doe",
+	},
+});
+
+// Polls for jobs and runs them
+jobbig.server();

@@ -11,7 +11,7 @@ CREATE TABLE "jobbig_runs" (
 	"data" jsonb,
 	"metadata" jsonb,
 	"result" jsonb,
-	"retry" integer DEFAULT 0,
+	"attempt" integer DEFAULT 0,
 	"current_step" integer DEFAULT 0 NOT NULL,
 	"started_at" timestamp,
 	"created_at" timestamp DEFAULT now() NOT NULL,

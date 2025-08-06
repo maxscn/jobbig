@@ -1,20 +1,36 @@
 import type { Store } from "@jobbig/core";
-import { and, eq } from "drizzle-orm";
+import { and, eq, lte } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { migrate } from "./migrate";
 import { runs } from "./schema";
 
 interface DrizzlePostgresStoreOpts {
 	db: PostgresJsDatabase;
+	margin?: number;
 }
 export async function DrizzlePostgresStore(
 	opts: DrizzlePostgresStoreOpts,
 ): Promise<Store> {
 	const db = opts.db;
 	await migrate(db);
+	const margin = opts.margin ?? 0;
 
 	return {
-		store(run) {
+		async poll(amount) {
+			const rows = await db
+				.select()
+				.from(runs)
+				.limit(amount + 1)
+				.where(
+					and(
+						eq(runs.status, "pending"),
+						lte(runs.scheduledAt, new Date(Date.now() + margin)),
+					),
+				);
+			const exhausted = rows.length <= amount;
+			return { runs: rows, info: { exhausted } };
+		},
+		push(run) {
 			return db.insert(runs).values(run);
 		},
 		async get(runId, key) {
@@ -56,7 +72,7 @@ export async function DrizzlePostgresStore(
 			const rows = await db.transaction(async (tx) =>
 				tx
 					.update(runs)
-					.set({ status: "pending", startedAt: null })
+					.set({ status: "pending" })
 					.where(and(eq(runs.id, runId), eq(runs.status, "running"))),
 			);
 			return rows.length > 0;

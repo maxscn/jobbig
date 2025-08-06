@@ -1,8 +1,4 @@
-import {
-	BaseOrchestrator,
-	type OrchestratorOpts,
-	type Worker,
-} from "@jobbig/core";
+import { BaseOrchestrator, type OrchestratorOpts, type Worker } from "../";
 export function CronWorker(opts: OrchestratorOpts): Worker {
 	const poll = BaseOrchestrator(opts);
 	return {

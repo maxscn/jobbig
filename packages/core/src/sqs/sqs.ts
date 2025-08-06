@@ -1,4 +1,4 @@
-import type { Queue } from "@jobbig/core";
+import type { Store } from "@jobbig/core";
 import { client } from "./aws";
 
 const MAX_DELAY_SECONDS = 900;
@@ -9,13 +9,12 @@ interface SQSOpts {
 	 */
 	queueUrl: string;
 	/**
-	 * The SQS implementation requires a backing seperate queue to support delayed messages.
-	 * This queue is skipped if the scheduled date is within 15 minutes of the current time, as that is the maximum delay supported by SQS.
+	 * The SQS implementation requires a backing seperate queue to support delayed messages and additional functionality for updating and storing messages.
 	 *
 	 */
-	queue: Queue;
+	store: Store;
 }
-export function SQS({ queueUrl, queue }: SQSOpts): Queue {
+export function SQS({ queueUrl, store }: SQSOpts): Store {
 	async function sendMessage(payload: any) {
 		const aws = await client();
 		const res = await aws.fetch(`https://sqs.${aws.region}.amazonaws.com`, {
@@ -37,7 +36,7 @@ export function SQS({ queueUrl, queue }: SQSOpts): Queue {
 
 	return {
 		async poll(amount) {
-			const { runs, info } = await queue.poll(amount);
+			const { runs, info } = await store.poll(amount);
 			for (const run of runs) {
 				await this.push(run);
 			}
@@ -49,9 +48,8 @@ export function SQS({ queueUrl, queue }: SQSOpts): Queue {
 				0,
 				run.scheduledAt.getTime() / 1000 - timestamp,
 			);
-			if (delaySeconds > MAX_DELAY_SECONDS) {
-				await queue.push(run);
-			} else {
+			await store.push(run);
+			if (delaySeconds <= MAX_DELAY_SECONDS) {
 				const messageBody = JSON.stringify(run);
 				await sendMessage({
 					MessageBody: messageBody,
@@ -60,5 +58,11 @@ export function SQS({ queueUrl, queue }: SQSOpts): Queue {
 				});
 			}
 		},
+		set: store.set,
+		get: store.get,
+		fetch: store.fetch,
+		lock: store.lock,
+		unlock: store.unlock,
+		isLocked: store.isLocked,
 	};
 }

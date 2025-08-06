@@ -12,7 +12,7 @@ CREATE TABLE `jobbig_runs` (
 	`data` json,
 	`metadata` json,
 	`result` json,
-	`retry` int DEFAULT 0,
+	`attempt` int DEFAULT 0,
 	`current_step` int NOT NULL DEFAULT 0,
 	`started_at` timestamp,
 	`created_at` timestamp NOT NULL DEFAULT (now()),

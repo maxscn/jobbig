@@ -7,6 +7,19 @@ export function LocalStore(state: State): Store {
 	const store = state;
 
 	return {
+		async poll(maxAmt: number) {
+			const now = new Date();
+			const jobs = Object.values(store).filter((job) => job.scheduledAt <= now);
+			const exhausted = jobs.length < maxAmt;
+			const runs = Object.values(store).splice(
+				0,
+				Math.min(maxAmt, jobs.length),
+			);
+			return Promise.resolve({
+				runs,
+				info: { exhausted },
+			});
+		},
 		async set(runId, key, value) {
 			if (!store?.[runId]) {
 				throw new Error(`Run ${runId} does not exist`);
@@ -17,7 +30,7 @@ export function LocalStore(state: State): Store {
 		async get(runId, key) {
 			return store?.[runId]?.[key];
 		},
-		async store(run) {
+		async push(run) {
 			store[run.id] = run;
 		},
 		async fetch(runId) {
@@ -49,7 +62,6 @@ export function LocalStore(state: State): Store {
 			store[runId] = {
 				...store[runId],
 				status: "pending",
-				startedAt: null,
 			};
 			return true;
 		},
