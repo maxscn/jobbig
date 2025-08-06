@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.1.19
+
+### Patch Changes
+
+- e90ca35: Finalizing final api, some type safety left to do, but it is getting there.
+
 ## 0.1.18
 
 ### Patch Changes
