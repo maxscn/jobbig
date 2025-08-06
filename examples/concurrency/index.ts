@@ -1,4 +1,5 @@
-import { EventPlugin, Jobbig, ServerPlugin } from "@jobbig/core";
+import { Jobbig } from "@jobbig/core";
+import { EventPlugin, ServerPlugin } from "@jobbig/core/plugins";
 import { LocalStore } from "@jobbig/local";
 import { z } from "zod";
 
@@ -41,7 +42,7 @@ const jobbig = Jobbig({
 	});
 
 jobbig.publish({
-	type: "user.updated",
+	type: "user.created",
 	payload: {
 		id: "123",
 		email: "test@example.com",
