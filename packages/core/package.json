@@ -10,7 +10,9 @@
     "exports": {
       ".": "./src/index.ts",
       "./utils": "./src/utils/index.ts",
-      "./utils/*": "./src/utils/*"
+      "./utils/*": "./src/utils/*",
+      "./plugins": "./src/plugins/index.ts",
+      "./plugins/*": "./src/plugins/*"
     }
   },
   "scripts": {
@@ -25,7 +27,8 @@
   },
   "dependencies": {
     "@standard-schema/spec": "^1.0.0",
-    "ulid": "^3.0.1"
+    "ulid": "^3.0.1",
+    "aws4fetch": "^1.0.20"
   },
   "files": [
     "dist",
@@ -48,6 +51,16 @@
       "types": "./dist/utils/*",
       "import": "./dist/utils/*",
       "require": "./dist/utils/*"
+    },
+    "./plugins": {
+      "types": "./dist/plugins/index.d.cts",
+      "import": "./dist/plugins/index.js",
+      "require": "./dist/plugins/index.cjs"
+    },
+    "./plugins/*": {
+      "types": "./dist/plugins/*",
+      "import": "./dist/plugins/*",
+      "require": "./dist/plugins/*"
     }
   }
 }

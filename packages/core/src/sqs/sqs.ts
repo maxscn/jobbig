@@ -1,4 +1,4 @@
-import type { Store } from "@jobbig/core";
+import type { Store } from "../";
 import { client } from "./aws";
 
 const MAX_DELAY_SECONDS = 900;

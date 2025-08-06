@@ -1,20 +1,19 @@
-import { BaseRunner, type Job, type Store, type Worker } from "@jobbig/core";
 import type { SQSEvent } from "aws-lambda";
+import { BaseRunner, type JobbigInstance, type Worker } from "../";
 
 interface SQSWorkerOpts {
 	payload: SQSEvent;
-	store: Store;
-	jobs: Job[];
+	jobbig: JobbigInstance;
 }
 
-export function SQSWorker({ store, payload, jobs }: SQSWorkerOpts): Worker {
+export function SQSWorker({ jobbig, payload }: SQSWorkerOpts): Worker {
 	return {
 		async start() {
 			const runs = await Promise.all(
 				payload.Records.map((record) => JSON.parse(record.body)),
 			);
 			for (const run of runs) {
-				const runner = BaseRunner({ run, store, jobs });
+				const runner = BaseRunner({ run, jobbig });
 				await runner.run();
 			}
 		},

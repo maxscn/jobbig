@@ -1,6 +1,6 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import { Job, type JobType } from "../job";
-import { Jobbig, type JobbigInstance, type JobsFromArray } from "../jobbig";
+import type { JobbigInstance, JobsFromArray } from "../jobbig";
 import type { RunInput } from "../run";
 
 type EventData<Type extends string = string, Payload = unknown> = {
@@ -117,7 +117,7 @@ export function EventPlugin<Events extends readonly Event[] = readonly []>(
 				}
 
 				await instance.schedule({
-					jobId: event.type,
+					jobId: event.type as any,
 					data: event.payload,
 				});
 			},
