@@ -63,9 +63,9 @@ export function BaseRunner({ run, jobbig }: RunnerOpts): Runner {
 							}),
 					},
 				};
-				// await job.hooks?.beforeRun?.(jobOpts);
-				// await job.run(jobOpts);
-				// await job.hooks?.afterRun?.(jobOpts);
+				await job.hooks?.beforeRun?.(jobOpts);
+				await job.run(jobOpts);
+				await job.hooks?.afterRun?.(jobOpts);
 				// Consider if we want a complete function to do both of these.
 				await store.set(run.id, "status", "success");
 				await store.set(run.id, "finishedAt", new Date());
