@@ -64,12 +64,25 @@
         "tailwindcss": "^4.1.11",
       },
     },
+    "examples/concurrency": {
+      "name": "concurrency",
+      "dependencies": {
+        "@jobbig/core": "workspace:*",
+        "@jobbig/local": "workspace:*",
+        "zod": "^4.0.14",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
     "examples/drizzle": {
       "name": "drizzle",
       "dependencies": {
         "@jobbig/core": "workspace:*",
         "@jobbig/drizzle": "workspace:*",
-        "@jobbig/workers": "workspace:*",
         "zod": "^4.0.14",
       },
       "devDependencies": {
@@ -82,9 +95,8 @@
     "examples/local": {
       "name": "local",
       "dependencies": {
-        "@jobbig/core": "*",
-        "@jobbig/local": "*",
-        "@jobbig/workers": "*",
+        "@jobbig/core": "workspace:*",
+        "@jobbig/local": "workspace:*",
         "zod": "^4.0.14",
       },
       "devDependencies": {
@@ -97,10 +109,8 @@
     "examples/sqs": {
       "name": "sqs",
       "dependencies": {
-        "@jobbig/core": "*",
-        "@jobbig/local": "*",
-        "@jobbig/sqs": "*",
-        "@jobbig/workers": "*",
+        "@jobbig/core": "workspace:*",
+        "@jobbig/local": "workspace:*",
         "zod": "^4.0.14",
       },
       "devDependencies": {
@@ -126,9 +136,10 @@
     },
     "packages/core": {
       "name": "@jobbig/core",
-      "version": "0.1.16",
+      "version": "0.1.18",
       "dependencies": {
         "@standard-schema/spec": "^1.0.0",
+        "aws4fetch": "^1.0.20",
         "ulid": "^3.0.1",
       },
       "devDependencies": {
@@ -140,7 +151,7 @@
     },
     "packages/drizzle": {
       "name": "@jobbig/drizzle",
-      "version": "0.1.16",
+      "version": "0.1.18",
       "dependencies": {
         "@jobbig/core": "*",
         "mysql2": "^3.14.3",
@@ -157,35 +168,7 @@
     },
     "packages/local": {
       "name": "@jobbig/local",
-      "version": "0.1.16",
-      "dependencies": {
-        "@jobbig/core": "*",
-      },
-      "devDependencies": {
-        "@types/bun": "latest",
-      },
-      "peerDependencies": {
-        "typescript": "^5",
-      },
-    },
-    "packages/sqs": {
-      "name": "@jobbig/sqs",
-      "version": "0.1.16",
-      "dependencies": {
-        "@jobbig/core": "*",
-        "aws4fetch": "^1.0.20",
-      },
-      "devDependencies": {
-        "@types/aws-lambda": "^8.10.152",
-        "@types/bun": "latest",
-      },
-      "peerDependencies": {
-        "typescript": "^5",
-      },
-    },
-    "packages/workers": {
-      "name": "@jobbig/workers",
-      "version": "0.1.16",
+      "version": "0.1.18",
       "dependencies": {
         "@jobbig/core": "*",
       },
@@ -464,11 +447,7 @@
 
     "@jobbig/local": ["@jobbig/local@workspace:packages/local"],
 
-    "@jobbig/sqs": ["@jobbig/sqs@workspace:packages/sqs"],
-
     "@jobbig/studio": ["@jobbig/studio@workspace:apps/studio"],
-
-    "@jobbig/workers": ["@jobbig/workers@workspace:packages/workers"],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.12", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-OuLGC46TjB5BbN1dH8JULVVZY4WTdkF7tV9Ys6wLL1rubZnCMstOhNHueU5bLCrnRuDhKPDM4g6sw4Bel5Gzqg=="],
 
@@ -824,8 +803,6 @@
 
     "@tanstack/virtual-file-routes": ["@tanstack/virtual-file-routes@1.129.7", "", {}, "sha512-a+MxoAXG+Sq94Jp67OtveKOp2vQq75AWdVI8DRt6w19B0NEqpfm784FTLbVp/qdR1wmxCOmKAvElGSIiBOx5OQ=="],
 
-    "@types/aws-lambda": ["@types/aws-lambda@8.10.152", "", {}, "sha512-soT/c2gYBnT5ygwiHPmd9a1bftj462NWVk2tKCc1PYHSIacB2UwbTS2zYG4jzag1mRDuzg/OjtxQjQ2NKRB6Rw=="],
-
     "@types/babel__core": ["@types/babel__core@7.20.5", "", { "dependencies": { "@babel/parser": "^7.20.7", "@babel/types": "^7.20.7", "@types/babel__generator": "*", "@types/babel__template": "*", "@types/babel__traverse": "*" } }, "sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA=="],
 
     "@types/babel__generator": ["@types/babel__generator@7.27.0", "", { "dependencies": { "@babel/types": "^7.0.0" } }, "sha512-ufFd2Xi92OAVPYsy+P4n7/U7e68fex0+Ee8gSG9KX7eo084CWiQ4sdxktvdl0bOPupXtVJPY19zk6EwWqUQ8lg=="],
@@ -1081,6 +1058,8 @@
     "compress-commons": ["compress-commons@6.0.2", "", { "dependencies": { "crc-32": "^1.2.0", "crc32-stream": "^6.0.0", "is-stream": "^2.0.1", "normalize-path": "^3.0.0", "readable-stream": "^4.0.0" } }, "sha512-6FqVXeETqWPoGcfzrXb37E50NP0LXT8kAMu5ooZayhWWdgEY4lBEEcbQNXtkuKQsGduxiIcI4gOTsxTmuq/bSg=="],
 
     "compute-scroll-into-view": ["compute-scroll-into-view@3.1.1", "", {}, "sha512-VRhuHOLoKYOy4UbilLbUzbYg93XLjv2PncJC50EuTWPA3gaja1UjBsUP/D/9/juV3vQFr6XBEzn9KCAHdUvOHw=="],
+
+    "concurrency": ["concurrency@workspace:examples/concurrency"],
 
     "confbox": ["confbox@0.2.2", "", {}, "sha512-1NB+BKqhtNipMsov4xI/NnhCKp9XG9NamYp5PVm9klAT0fsrNPjaFICsCFhNhwZJKNh7zB/3q8qXz0E9oaMNtQ=="],
 

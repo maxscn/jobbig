@@ -12,7 +12,6 @@
   "dependencies": {
     "zod": "^4.0.14",
     "@jobbig/core": "workspace:*",
-    "@jobbig/local": "workspace:*",
-    "@jobbig/workers": "workspace:*"
+    "@jobbig/local": "workspace:*"
   }
 }
