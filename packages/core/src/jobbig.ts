@@ -46,7 +46,7 @@ export function Jobbig<
 				"metadata"
 			>,
 		) {
-			const matchedJob = jobs.find((j) => j.id === run.jobId);
+			const matchedJob = this.jobs.find((j) => j.id === run.jobId);
 			if (!matchedJob) throw new Error(`Job ${run.jobId} not found`);
 			let result = matchedJob.schema["~standard"].validate(run.data);
 			if (result instanceof Promise) result = await result;
