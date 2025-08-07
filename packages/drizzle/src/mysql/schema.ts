@@ -19,7 +19,7 @@ export const runs = mysqlTable("jobbig_runs", (table) => ({
 	data: table.json("data"),
 	metadata: table.json("metadata"),
 	result: table.json("result"),
-	attempt: table.int("retry").default(0),
+	attempt: table.int("attempt").default(0),
 	currentStep: table.int("current_step").notNull().default(0),
 	startedAt: table.timestamp("started_at"),
 	createdAt: table.timestamp("created_at").notNull().defaultNow(),

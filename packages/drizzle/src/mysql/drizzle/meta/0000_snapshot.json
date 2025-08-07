@@ -28,9 +28,7 @@
       "compositePrimaryKeys": {
         "jobbig_migrations_id": {
           "name": "jobbig_migrations_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -90,8 +88,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "retry": {
-          "name": "retry",
+        "attempt": {
+          "name": "attempt",
           "type": "int",
           "primaryKey": false,
           "notNull": false,
@@ -134,9 +132,7 @@
       "compositePrimaryKeys": {
         "jobbig_runs_id": {
           "name": "jobbig_runs_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},

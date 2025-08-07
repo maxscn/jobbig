@@ -78,8 +78,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "retry": {
-          "name": "retry",
+        "attempt": {
+          "name": "attempt",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
