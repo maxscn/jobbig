@@ -36,7 +36,14 @@ export async function DrizzleMySQLStore(opts: {
 			return { runs: rows, info: { exhausted } };
 		},
 		async push(run) {
-			await db.insert(runs).values(run).onDuplicateKeyUpdate({ set: {} });
+			await db
+				.insert(runs)
+				.values(run)
+				.onDuplicateKeyUpdate({
+					set: {
+						jobId: run.jobId, // Temporary fix
+					},
+				});
 		},
 		async get(runId, key) {
 			return db
