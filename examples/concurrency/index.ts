@@ -1,5 +1,10 @@
 import { Jobbig } from "@jobbig/core";
-import { EventPlugin, ServerPlugin } from "@jobbig/core/plugins";
+import {
+	CronPlugin,
+	EventPlugin,
+	ServerPlugin,
+	SQSPlugin,
+} from "@jobbig/core/plugins";
 import { LocalStore } from "@jobbig/local";
 import { z } from "zod";
 
@@ -10,6 +15,7 @@ const jobbig = Jobbig({
 	store,
 })
 	.use(ServerPlugin())
+	.use(SQSPlugin({ queueUrl: "test" }))
 	.use(EventPlugin())
 	.handle({
 		type: "user.created",
