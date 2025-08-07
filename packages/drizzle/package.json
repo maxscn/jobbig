@@ -2,7 +2,7 @@
   "name": "@jobbig/drizzle",
   "module": "./dist/index.js",
   "type": "module",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "zshy": {
     "exports": {
       ".": "./src/index.ts",

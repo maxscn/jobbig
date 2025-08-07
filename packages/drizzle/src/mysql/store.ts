@@ -36,14 +36,7 @@ export async function DrizzleMySQLStore(opts: {
 			return { runs: rows, info: { exhausted } };
 		},
 		async push(run) {
-			await db
-				.insert(runs)
-				.values(run)
-				.catch((err) => {
-					if (!err.message.includes("AlreadyExists")) {
-						throw err;
-					}
-				});
+			await db.insert(runs).values(run).onDuplicateKeyUpdate({ set: {} });
 		},
 		async get(runId, key) {
 			return db
