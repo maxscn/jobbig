@@ -35,7 +35,7 @@ export async function DrizzlePostgresStore(
 				.insert(runs)
 				.values(run)
 				.catch((err) => {
-					if (!err.includes("AlreadyExists")) {
+					if (!err.message.includes("AlreadyExists")) {
 						throw err;
 					}
 				});
