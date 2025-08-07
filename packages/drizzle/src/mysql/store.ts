@@ -72,13 +72,26 @@ export async function DrizzleMySQLStore(opts: {
 				});
 		},
 		async lock(runId) {
-			const rows = await db.transaction((tx) =>
-				tx
+			return await db.transaction(async (tx) => {
+				// Lock the row for update
+				const [row] = await tx
+					.select()
+					.from(runs)
+					.where(and(eq(runs.id, runId), eq(runs.status, "pending")))
+					.for("update");
+
+				if (!row) {
+					return false;
+				}
+
+				// Perform the update
+				await tx
 					.update(runs)
 					.set({ status: "running", startedAt: new Date() })
-					.where(and(eq(runs.id, runId), eq(runs.status, "pending"))),
-			);
-			return rows.length > 0;
+					.where(eq(runs.id, runId));
+
+				return true;
+			});
 		},
 		async unlock(runId) {
 			const rows = await db.transaction(async (tx) =>

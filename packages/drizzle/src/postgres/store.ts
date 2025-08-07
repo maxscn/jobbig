@@ -60,13 +60,27 @@ export async function DrizzlePostgresStore(
 				});
 		},
 		async lock(runId) {
-			const rows = await db.transaction((tx) =>
-				tx
+			return await db.transaction(async (tx) => {
+				// Lock the row for update - slightly different syntax for .for()
+				const [row] = await tx
+					.select()
+					.from(runs)
+					.where(and(eq(runs.id, runId), eq(runs.status, "pending")))
+					.for("update"); // In Drizzle, this works the same way
+
+				if (!row) {
+					return false;
+				}
+
+				// Perform the update - PostgreSQL returns affected count directly
+				const updateResult = await tx
 					.update(runs)
 					.set({ status: "running", startedAt: new Date() })
-					.where(and(eq(runs.id, runId), eq(runs.status, "pending"))),
-			);
-			return rows.length > 0;
+					.where(eq(runs.id, runId))
+					.returning(); // PostgreSQL supports RETURNING clause
+
+				return updateResult.length > 0;
+			});
 		},
 		async unlock(runId) {
 			const rows = await db.transaction(async (tx) =>

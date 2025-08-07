@@ -75,6 +75,9 @@ export function BaseRunner({ run, jobbig }: RunnerOpts): Runner {
 				// We might eventually want to separate the status of the job logic from the actual run, for easier rescheduling.
 				if (err instanceof AbortError) {
 					await store.unlock(run.id);
+				} else if ((job.retries ?? 0) < (run.attempt ?? 0)) {
+					await store.set(run.id, "attempt", (run.attempt ?? 0) + 1);
+					await store.unlock(run.id);
 				} else {
 					await store.set(run.id, "status", "failure");
 				}

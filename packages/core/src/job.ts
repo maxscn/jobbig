@@ -19,19 +19,6 @@ export interface JobType<
 	 * Schema of the data
 	 */
 	schema: T;
-	// retries?: {
-	// 	/**
-	// 	 * Max amount of retries
-	// 	 * @default 0
-	// 	 */
-	// 	amount?: number;
-	// 	/**
-	// 	 * Defaults to exponential backoff
-	// 	 * @param attempt (the current attempt, starts at 0)
-	// 	 * @returns delay
-	// 	 */
-	// 	delayFn?(attempt: number): number;
-	// };
 
 	hooks?: {
 		beforeRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
@@ -39,12 +26,19 @@ export interface JobType<
 		// beforeStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
 		// afterStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
 	};
+
+	/**
+	 * The amount of time to retry a job. Defaults to 0. The job will be rescheduled and runs again within the scheduling the delay.
+	 */
+
+	retries?: number;
 }
 
 export const Job = <const T extends StandardSchemaV1, const Id extends string>({
 	id,
 	run,
 	schema,
+	retries = 0,
 }: Readonly<JobType<T, Id>>) => {
 	if (!id || id.length === 0) {
 		throw new Error(`Job ID must be a non-empty string`);
@@ -65,5 +59,6 @@ export const Job = <const T extends StandardSchemaV1, const Id extends string>({
 			return run(opts);
 		},
 		schema,
+		retries,
 	} as JobType<T, Id>;
 };
