@@ -31,7 +31,14 @@ export async function DrizzlePostgresStore(
 			return { runs: rows, info: { exhausted } };
 		},
 		push(run) {
-			return db.insert(runs).values(run);
+			return db
+				.insert(runs)
+				.values(run)
+				.catch((err) => {
+					if (!err.includes("AlreadyExists")) {
+						throw err;
+					}
+				});
 		},
 		async get(runId, key) {
 			return db

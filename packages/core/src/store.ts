@@ -9,6 +9,10 @@ export interface QueueInfo {
 }
 
 export interface Store {
+	/**
+	 * Stores a run in the store, should not throw if the run already exists.
+	 * @param run
+	 */
 	push(run: RunData): Promise<void>;
 	poll(amt: number): Promise<{ runs: RunData[]; info: QueueInfo }>;
 	set<T extends keyof RunData>(

@@ -14,9 +14,9 @@ const store = LocalStore({});
 const jobbig = Jobbig({
 	store,
 })
+	.use(EventPlugin())
 	.use(ServerPlugin())
 	.use(SQSPlugin({ queueUrl: "test" }))
-	.use(EventPlugin())
 	.handle({
 		type: "user.created",
 		schema: z.object({
