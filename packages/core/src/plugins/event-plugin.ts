@@ -42,33 +42,29 @@ type EventPluginReturn<
 			>
 		>,
 	) => Promise<void>;
-	handle<
+	on<
+		T extends JobbigInstance<JobTypes, Metadata, J, Id, Plugins>,
 		const NewSchema extends StandardSchemaV1,
 		const NewType extends string,
-	>(event: {
+	>(
+		this: T,
+		event: {
 		type: NewType;
 		schema: NewSchema;
 		handler: (
 			opts: RunInput<StandardSchemaV1.InferInput<NewSchema>>,
 		) => Promise<void>;
-	}): JobbigInstance<
+	}): T & EventPluginReturn<
+		readonly [...Events, Event<NewSchema, NewType>],
 		JobTypes,
 		Metadata,
 		J,
 		Id,
-		Plugins &
-			EventPluginReturn<
-				readonly [...Events, Event<NewSchema, NewType>],
-				JobTypes,
-				Metadata,
-				J,
-				Id,
-				Plugins
-			>
-	>;
+		Plugins
+		>
 };
 
-export function EventPlugin<Events extends readonly Event[] = readonly []>(
+export function EventPlugin<BaseInstance extends JobbigInstance, Events extends readonly Event[] = readonly []>(
 	opts?: EventOpts<Events>,
 ) {
 	const { events = [] } = opts ?? {};
@@ -103,41 +99,34 @@ export function EventPlugin<Events extends readonly Event[] = readonly []>(
 				}
 
 				await instance.schedule({
-					jobId: event.type,
+					jobId: event.type as unknown as Id,
 					data: event.payload,
 				});
 			},
 
-			handle<
+			on<
+				T extends JobbigInstance<JobTypes, Metadata, J, Id, Plugins>,
 				const NewSchema extends StandardSchemaV1,
 				const NewType extends string,
 			>(
-				event:
-					| {
+				this: T,
+				event: {
 							type: NewType;
 							schema: NewSchema;
 							handler: (
 								opts: RunInput<StandardSchemaV1.InferInput<NewSchema>>,
 							) => Promise<void>;
 					  }
-					| {
-							id: NewType;
-							schema: NewSchema;
-							run: (
-								opts: RunInput<StandardSchemaV1.InferInput<NewSchema>>,
-							) => Promise<void>;
-					  },
-			) {
+			): T {
 				const job = {
-					id: "id" in event ? event.id : event.type,
+					id: event.type,
 					schema: event.schema,
-					run: "run" in event ? event.run : event.handler,
+					run: event.handler,
 				};
 				const newInstance = instance.handle(job);
 				const currentPlugin = EventPlugin({
 					events: events as readonly [...Events],
 				});
-				if ("type" in event) {
 					// Create a new event from the input
 					const newEvent: Event<NewSchema, NewType> = {
 						type: event.type,
@@ -153,10 +142,14 @@ export function EventPlugin<Events extends readonly Event[] = readonly []>(
 						],
 					});
 					// Apply the updated plugin to the instance
-					return newInstance.use(updatedPlugin);
-				}
-
-				return newInstance.use(currentPlugin);
+					return this as T & EventPluginReturn<
+						readonly [...Events, Event<NewSchema, NewType>],
+						JobTypes,
+						Metadata,
+						J,
+						Id,
+						Plugins
+					>;
 			},
 		};
 

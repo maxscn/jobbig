@@ -61,7 +61,7 @@ export type RunStatus = (typeof RunStatus)[keyof typeof RunStatus];
 export interface RunInput<T> {
 	ctx: Context<T>;
 }
-export type RunOpts<JobId extends string = string, JobData = any> = {
+export type RunOpts<JobId extends string = string, JobData = unknown> = {
 	jobId: JobId;
 	data?: JobData;
 	metadata: unknown;

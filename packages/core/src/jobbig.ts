@@ -35,9 +35,15 @@ export function Jobbig<
 	const { store, jobs = [], metadata } = opts;
 	const plugins: Plugin<Record<string, any>, T, Metadata, J, Id, Plugins>[] =
 		[];
-
+// <SpecificType extends EventsFromArray<Events>["type"]>(
+// 				event: EventData<
+// 					SpecificType,
+// 					StandardSchemaV1.InferInput<
+// 						SchemaForType<EventsFromArray<Events>, SpecificType>
+// 					>
+// 				>,
 	const baseInstance = {
-		async schedule<SpecificId extends Id = Id>(
+		async schedule<SpecificId extends Id>(
 			run: Omit<
 				RunOpts<
 					SpecificId,
@@ -122,13 +128,11 @@ export type JobbigInstance<
 	Id extends J["id"] = J["id"],
 	Plugins extends Record<string, any> = {},
 > = {
-	schedule<SpecificId extends string>(
+	schedule<SpecificId extends Id>(
 		run: Omit<
 			RunOpts<
 				SpecificId,
-				SpecificId extends Id
-					? StandardSchemaV1.InferInput<SchemaForId<J, SpecificId>>
-					: any
+				StandardSchemaV1.InferInput<SchemaForId<J, SpecificId>>
 			>,
 			"metadata"
 		>,
