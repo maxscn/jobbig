@@ -62,8 +62,10 @@ export function Jobbig<
 			return store;
 		},
 		get jobs(): readonly J[] {
-			console.log("fetched jobs from jobbig");
 			return jobs;
+		},
+		get metadata(): Metadata | undefined {
+			return metadata;
 		},
 		create: Run,
 		use<NewPlugins extends Record<string, any>>(
@@ -95,12 +97,11 @@ export function Jobbig<
 			metadata?: Metadata;
 		}) {
 			const j = Job({ ...job }) as Readonly<JobType<TSchema, Id>>;
-			const newJobs = [...jobs, j] as const;
+			const newJobs = [...jobs, j] as readonly J[];
 			return this.init({
-				//@ts-ignore
 				jobs: newJobs,
 				store,
-				metadata: metadata ?? opts.metadata,
+				metadata: opts.metadata,
 			}) as JobbigInstance<
 				[...T, JobType<TSchema, Id>],
 				Metadata,
@@ -136,6 +137,7 @@ export type JobbigInstance<
 	create: typeof Run;
 	get jobs(): J[];
 	get store(): Store;
+	get metadata(): Metadata | undefined;
 	replacePlugin(
 		plugin: Plugin<any, T, Metadata, J, Id, Plugins>,
 	): JobbigInstance<T, Metadata, J, Id, Plugins>;

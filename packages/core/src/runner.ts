@@ -43,7 +43,11 @@ export function BaseRunner({ run, jobbig }: RunnerOpts): Runner {
 						step,
 						store: ScopedStore(run.id, store),
 						metadata: run.metadata,
-						schedule: jobbig.schedule,
+						schedule: jobbig.init({
+							jobs: jobbig.jobs,
+							store: jobbig.store,
+							metadata: run.metadata,
+						}).schedule,
 						sleep: async (ms: number) =>
 							step.run(`sleep-${ms}-${ulid()}`, async () => {
 								if (ms > MAX_INTERNAL_SLEEP_MS) {
