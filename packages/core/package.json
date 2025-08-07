@@ -12,7 +12,8 @@
       "./utils": "./src/utils/index.ts",
       "./utils/*": "./src/utils/*",
       "./plugins": "./src/plugins/index.ts",
-      "./plugins/*": "./src/plugins/*"
+      "./plugins/*": "./src/plugins/*",
+      "./sqs": "./src/sqs/index.ts"
     }
   },
   "scripts": {
@@ -61,6 +62,11 @@
       "types": "./dist/plugins/*",
       "import": "./dist/plugins/*",
       "require": "./dist/plugins/*"
+    },
+    "./sqs": {
+      "types": "./dist/sqs/index.d.cts",
+      "import": "./dist/sqs/index.js",
+      "require": "./dist/sqs/index.cjs"
     }
   }
 }
