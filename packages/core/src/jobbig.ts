@@ -5,10 +5,11 @@ import type { Store } from "./store";
 
 export type JobsFromArray<T extends readonly JobType[]> = T[number];
 
-interface JobbigOpts<J extends JobType, Metadata> {
-	readonly jobs?: readonly J[];
+interface JobbigOpts<T extends Readonly<JobType<any, any>>[], Metadata, Plugins extends Record<string, any>> {
+	jobs?: T;
 	store: Store;
 	metadata?: Metadata;
+	plugins?: Plugins;
 }
 
 type SchemaForId<J extends JobType, Id extends J["id"]> = Extract<
@@ -16,41 +17,26 @@ type SchemaForId<J extends JobType, Id extends J["id"]> = Extract<
 	{ id: Id }
 >["schema"];
 
-type Plugin<
-	NewPlugins extends Record<string, any>,
-	T extends readonly JobType[],
-	Metadata,
-	J extends JobType,
-	Id extends J["id"],
-	Plugins extends Record<string, any>,
-> = (instance: JobbigInstance<T, Metadata, J, Id, Plugins>) => NewPlugins;
+type SchemaForIdFromArray<T extends JobType<any, any>[], Id extends JobsFromArray<T>["id"]> =
+  Extract<JobsFromArray<T>, { id: Id }>["schema"];
+
+
 
 export function Jobbig<
-	T extends readonly JobType[],
+	T extends JobType<any, any>[],
 	Metadata = unknown,
-	J extends JobType = JobsFromArray<T>,
-	Id extends J["id"] = J["id"],
 	Plugins extends Record<string, any> = {},
->(opts: JobbigOpts<J, Metadata>): JobbigInstance<T, Metadata, J, Id, Plugins> {
-	const { store, jobs = [], metadata } = opts;
-	const plugins: Plugin<Record<string, any>, T, Metadata, J, Id, Plugins>[] =
-		[];
-// <SpecificType extends EventsFromArray<Events>["type"]>(
-// 				event: EventData<
-// 					SpecificType,
-// 					StandardSchemaV1.InferInput<
-// 						SchemaForType<EventsFromArray<Events>, SpecificType>
-// 					>
-// 				>,
+>(opts: JobbigOpts<T, Metadata, Plugins>): JobbigInstance<T, Metadata, Plugins> & Plugins {
+	const { store,  metadata } = opts;
+	const plugins: Plugins = opts.plugins ?? {} as Plugins;
+	let jobs = opts.jobs ?? [] as unknown as T;
+
 	const baseInstance = {
-		async schedule<SpecificId extends Id>(
-			run: Omit<
-				RunOpts<
+		async schedule<SpecificId extends JobsFromArray<T>["id"]>(
+			run: RunOpts<
 					SpecificId,
-					StandardSchemaV1.InferInput<SchemaForId<J, SpecificId>>
-				>,
-				"metadata"
-			>,
+					StandardSchemaV1.InferInput<SchemaForId<JobsFromArray<T>["schema"], SpecificId>>
+				>
 		) {
 			const matchedJob = jobs.find((j) => j.id === run.jobId);
 			if (!matchedJob) throw new Error(`Job ${run.jobId} not found`);
@@ -67,97 +53,77 @@ export function Jobbig<
 		get store(): Store {
 			return store;
 		},
-		get jobs(): readonly J[] {
+		get jobs(): T {
 			return jobs;
 		},
 		get metadata(): Metadata | undefined {
 			return metadata;
 		},
-		create: Run,
-		use<NewPlugins extends Record<string, any>>(
-			plugin: (instance: JobbigInstance<any, any, any, any, any>) => NewPlugins,
-		): JobbigInstance<T, Metadata, J, Id, Plugins & NewPlugins> {
-			plugins.push(plugin);
+		get plugins(): Plugins {
+			return plugins
+		},
+		use<J extends JobbigInstance<any, any, any>,  NewPlugin extends Record<string, any>>(
+			this: J,
+			plugin: (instance: JobbigInstance<T, Metadata, Plugins>) => NewPlugin,
+		): JobbigInstance<T, Metadata, Plugins & NewPlugin> {
 			const newMethods = plugin(this);
-			return Object.assign({}, this, newMethods) as JobbigInstance<
-				T,
-				Metadata,
-				J,
-				Id,
-				Plugins & NewPlugins
-			>;
+			Object.assign(plugins, newMethods);
+			return Object.assign(this, newMethods) as J & Plugins & NewPlugin;
 		},
-		init(opts: JobbigOpts<J, Metadata>) {
-			let instance = Jobbig(opts);
-			for (const plugin of plugins) {
-				instance = instance.use(plugin as Plugin<any, any, any, any, any, any>);
-			}
-			return instance;
-		},
-		handle<TSchema extends StandardSchemaV1, Id extends string>(job: {
-			id: Id;
-			schema: TSchema;
-			run: (
-				opts: RunInput<StandardSchemaV1.InferInput<TSchema>>,
-			) => Promise<void>;
-			metadata?: Metadata;
-		}) {
+		handle<TSchema extends StandardSchemaV1, Id extends string>(job: JobType<TSchema, Id>): JobbigInstance<
+			[...T, JobType<TSchema, Id>],
+			Metadata,
+			Plugins
+		> {
 			const j = Job({ ...job }) as Readonly<JobType<TSchema, Id>>;
-			const newJobs = [...jobs, j] as readonly J[];
-			return this.init({
-				jobs: newJobs,
+			jobs = [...jobs, j] as T;
+			return Jobbig.bind(this)({
 				store,
-				metadata: opts.metadata,
-			}) as JobbigInstance<
+				jobs,
+				metadata,
+				plugins,
+			}) as unknown as JobbigInstance<
 				[...T, JobType<TSchema, Id>],
 				Metadata,
-				J | JobType<TSchema, Id>,
-				Id | JobType<TSchema, Id>["id"],
 				Plugins
-			>;
+			> & Plugins
+			
 		},
-	} as JobbigInstance<T, Metadata, J, Id, Plugins>;
-	return baseInstance;
+	};
+
+	// Initialize plugins
+	
+	return Object.assign(baseInstance, plugins) as JobbigInstance<T, Metadata, Plugins> & Plugins;
 }
 
 // Type definition for the Jobbig instance
-export type JobbigInstance<
-	T extends readonly JobType[] = JobType[],
+export interface JobbigInstance<
+	T extends JobType<any, any>[] = JobType<any, any>[],
 	Metadata = unknown,
-	J extends JobType = JobsFromArray<T>,
-	Id extends J["id"] = J["id"],
 	Plugins extends Record<string, any> = {},
-> = {
-	schedule<SpecificId extends Id>(
-		run: Omit<
-			RunOpts<
-				SpecificId,
-				StandardSchemaV1.InferInput<SchemaForId<J, SpecificId>>
-			>,
-			"metadata"
-		>,
-	): Promise<any>;
+> {
+	schedule: <SpecificId extends JobsFromArray<T>["id"]>(
+		run: RunOpts<
+    SpecificId,
+    StandardSchemaV1.InferInput<SchemaForIdFromArray<T, SpecificId>>
+  >
+	) => Promise<void>;
+	store: Store;
+	jobs: T;
+	metadata?: Metadata;
+	plugins: Plugins;
+	use<NewPlugin extends Record<string, any>>(
+		plugin: (instance: JobbigInstance<T, Metadata, Plugins> & Plugins) => NewPlugin,
+	): JobbigInstance<T, Metadata, Plugins & NewPlugin> & Plugins & NewPlugin;
+	handle<TSchema extends StandardSchemaV1, Id extends string>(
+		job: JobType<TSchema, Id>,
+	): JobbigInstance<[...T, JobType<TSchema, Id>], Metadata, Plugins> & Plugins;
+}
 
-	create: typeof Run;
-	get jobs(): J[];
-	get store(): Store;
-	get metadata(): Metadata | undefined;
-	replacePlugin(
-		plugin: Plugin<any, T, Metadata, J, Id, Plugins>,
-	): JobbigInstance<T, Metadata, J, Id, Plugins>;
-	init(
-		opts: JobbigOpts<J, Metadata>,
-	): JobbigInstance<T, Metadata, J, Id, Plugins>;
-	use<NewPlugins extends Record<string, any>>(
-		plugin: Plugin<NewPlugins, T, Metadata, J, Id, Plugins>,
-	): JobbigInstance<T, Metadata, J, Id, Plugins & NewPlugins>;
-	handle<const NewJob extends JobType>(
-		job: NewJob,
-	): JobbigInstance<
-		readonly [...T, NewJob],
-		Metadata,
-		J | NewJob,
-		Id | NewJob["id"],
-		Plugins
-	>;
-} & Plugins;
+
+  export type MergeShapes<U, V> =
+    keyof U & keyof V extends never
+      ? U & V
+      : {
+          [k in Exclude<keyof U, keyof V>]: U[k];
+        } & V;

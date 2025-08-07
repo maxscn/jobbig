@@ -64,7 +64,7 @@ export interface RunInput<T> {
 export type RunOpts<JobId extends string = string, JobData = unknown> = {
 	jobId: JobId;
 	data?: JobData;
-	metadata: unknown;
+	metadata?: unknown;
 	scheduledAt?: Date;
 };
 

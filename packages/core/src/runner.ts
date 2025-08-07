@@ -1,5 +1,5 @@
 import { ulid } from "ulid";
-import type { JobbigInstance } from "./jobbig";
+import { Jobbig, type JobbigInstance } from "./jobbig";
 import type { RunData } from "./run";
 import { Step } from "./step";
 import { ScopedStore } from "./store";
@@ -43,10 +43,11 @@ export function BaseRunner({ run, jobbig }: RunnerOpts): Runner {
 						step,
 						store: ScopedStore(run.id, store),
 						metadata: run.metadata,
-						schedule: jobbig.init({
+						schedule: Jobbig.bind(jobbig)({
 							jobs: jobbig.jobs,
 							store: jobbig.store,
 							metadata: run.metadata,
+							plugins: jobbig.plugins,
 						}).schedule,
 						sleep: async (ms: number) =>
 							step.run(`sleep-${ms}-${ulid()}`, async () => {

@@ -7,7 +7,7 @@ interface SQSPluginProps {
 	pollAmount?: number;
 }
 export function SQSPlugin({ pollAmount = 100 }: SQSPluginProps) {
-	return (instance: JobbigInstance) => ({
+	return (instance: JobbigInstance<any, any, any>) => ({
 		handler: (payload: SQSEvent) => {
 			return SQSWorker({ jobbig: instance, payload }).start();
 		},

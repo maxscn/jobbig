@@ -1,5 +1,5 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
-import { Job, type JobType } from "../job";
+import { type JobType } from "../job";
 import type { JobbigInstance, JobsFromArray } from "../jobbig";
 import type { RunInput } from "../run";
 
@@ -8,7 +8,7 @@ type EventData<Type extends string = string, Payload = unknown> = {
 	payload: Payload;
 };
 
-interface EventOpts<T extends readonly Event[]> {
+interface EventOpts<T extends Event[]> {
 	events?: T;
 }
 
@@ -18,7 +18,7 @@ interface Event<T extends StandardSchemaV1 = any, Id extends string = string> {
 	handler: (input: RunInput<StandardSchemaV1.InferInput<T>>) => Promise<void>;
 }
 
-type EventsFromArray<T extends readonly Event[]> = T[number];
+type EventsFromArray<T extends Event[]> = T[number];
 
 type SchemaForType<E extends Event, Type extends E["type"]> = Extract<
 	E,
@@ -27,12 +27,7 @@ type SchemaForType<E extends Event, Type extends E["type"]> = Extract<
 
 // Simplified plugin return type
 type EventPluginReturn<
-	Events extends readonly Event[],
-	JobTypes extends readonly JobType[],
-	Metadata,
-	J extends JobType,
-	Id extends J["id"],
-	Plugins extends Record<string, any>,
+	Events extends Event[],
 > = {
 	publish: <SpecificType extends EventsFromArray<Events>["type"]>(
 		event: EventData<
@@ -43,49 +38,35 @@ type EventPluginReturn<
 		>,
 	) => Promise<void>;
 	on<
-		T extends JobbigInstance<JobTypes, Metadata, J, Id, Plugins>,
+		T extends JobbigInstance<any, any, any>,
 		const NewSchema extends StandardSchemaV1,
 		const NewType extends string,
 	>(
 		this: T,
-		event: {
-		type: NewType;
-		schema: NewSchema;
-		handler: (
-			opts: RunInput<StandardSchemaV1.InferInput<NewSchema>>,
-		) => Promise<void>;
-	}): T & EventPluginReturn<
-		readonly [...Events, Event<NewSchema, NewType>],
-		JobTypes,
-		Metadata,
-		J,
-		Id,
-		Plugins
-		>
+		event: Event<NewSchema, NewType>
+	): T & EventPluginReturn<[...Events, Event<NewSchema, NewType>]>
 };
 
-export function EventPlugin<BaseInstance extends JobbigInstance, Events extends readonly Event[] = readonly []>(
+export function EventPlugin<Events extends Event[] = []>(
 	opts?: EventOpts<Events>,
 ) {
 	const { events = [] } = opts ?? {};
 
 	return <
-		JobTypes extends readonly JobType[] = JobType[],
+		JobTypes extends JobType[] = JobType[],
 		Metadata = unknown,
 		J extends JobType = JobsFromArray<JobTypes>,
 		Id extends J["id"] = J["id"],
 		Plugins extends Record<string, any> = {},
 	>(
-		instance: JobbigInstance<JobTypes, Metadata, J, Id, Plugins>,
-	): EventPluginReturn<Events, JobTypes, Metadata, J, Id, Plugins> => {
+		instance: JobbigInstance<JobTypes, Metadata, Plugins>,
+	): EventPluginReturn<Events> => {
 		const pluginMethods = {
 			publish: async <SpecificType extends EventsFromArray<Events>["type"]>(
-				event: EventData<
-					SpecificType,
-					StandardSchemaV1.InferInput<
-						SchemaForType<EventsFromArray<Events>, SpecificType>
-					>
-				>,
+				event:  {
+							type: SpecificType
+							payload: StandardSchemaV1.InferInput<SchemaForType<EventsFromArray<Events>, SpecificType>>
+						}
 			) => {
 				const matchedEvent = events.find((e) => e.type === event.type);
 				if (!matchedEvent) throw new Error(`Event ${event.type} not found`);
@@ -97,7 +78,8 @@ export function EventPlugin<BaseInstance extends JobbigInstance, Events extends 
 				if (result.issues) {
 					throw new Error(JSON.stringify(result.issues, null, 2));
 				}
-
+				
+				// @ts-ignore
 				await instance.schedule({
 					jobId: event.type as unknown as Id,
 					data: event.payload,
@@ -105,7 +87,7 @@ export function EventPlugin<BaseInstance extends JobbigInstance, Events extends 
 			},
 
 			on<
-				T extends JobbigInstance<JobTypes, Metadata, J, Id, Plugins>,
+				T extends JobbigInstance<JobTypes, Metadata, Plugins>,
 				const NewSchema extends StandardSchemaV1,
 				const NewType extends string,
 			>(
@@ -117,16 +99,15 @@ export function EventPlugin<BaseInstance extends JobbigInstance, Events extends 
 								opts: RunInput<StandardSchemaV1.InferInput<NewSchema>>,
 							) => Promise<void>;
 					  }
-			): T {
-				const job = {
-					id: event.type,
-					schema: event.schema,
-					run: event.handler,
-				};
-				const newInstance = instance.handle(job);
-				const currentPlugin = EventPlugin({
-					events: events as readonly [...Events],
-				});
+			): T & EventPluginReturn<
+						 [...Events, Event<NewSchema, NewType>]
+					> {
+					const job = {
+						id: event.type,
+						schema: event.schema,
+						run: event.handler,
+					};
+					const newInstance = instance.handle(job);
 					// Create a new event from the input
 					const newEvent: Event<NewSchema, NewType> = {
 						type: event.type,
@@ -136,59 +117,16 @@ export function EventPlugin<BaseInstance extends JobbigInstance, Events extends 
 
 					// Create a new plugin with the updated events array
 					const updatedPlugin = EventPlugin({
-						events: [...events, newEvent] as readonly [
+						events: [...events, newEvent] as [
 							...Events,
 							Event<NewSchema, NewType>,
 						],
 					});
 					// Apply the updated plugin to the instance
-					return this as T & EventPluginReturn<
-						readonly [...Events, Event<NewSchema, NewType>],
-						JobTypes,
-						Metadata,
-						J,
-						Id,
-						Plugins
-					>;
-			},
+					return Object.assign(newInstance as unknown as T, updatedPlugin(newInstance))
+				}
 		};
 
-		return pluginMethods as EventPluginReturn<
-			Events,
-			JobTypes,
-			Metadata,
-			J,
-			Id,
-			Plugins
-		>;
+		return pluginMethods as EventPluginReturn<Events>;
 	};
 }
-
-export const event = <T extends StandardSchemaV1, Id extends string>({
-	type,
-	handler,
-	schema,
-}: Event<T, Id>) => {
-	if (!type || type.length === 0) {
-		throw new Error(`Event type must be a non-empty string`);
-	}
-	if (type.length > 255) {
-		throw new Error(`Event type must be less than 255 characters`);
-	}
-
-	return {
-		type,
-		handler: async ({ ctx }: RunInput<T>) => {
-			let result = schema["~standard"].validate(ctx.data);
-			if (result instanceof Promise) result = await result;
-
-			// if the `issues` field exists, the validation failed
-			if (result.issues) {
-				throw new Error(JSON.stringify(result.issues, null, 2));
-			}
-
-			return handler({ ctx });
-		},
-		schema,
-	};
-};
