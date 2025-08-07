@@ -34,7 +34,6 @@ type EventPluginReturn<
 	Id extends J["id"],
 	Plugins extends Record<string, any>,
 > = {
-	get jobs(): JobType[];
 	publish: <SpecificType extends EventsFromArray<Events>["type"]>(
 		event: EventData<
 			SpecificType,
