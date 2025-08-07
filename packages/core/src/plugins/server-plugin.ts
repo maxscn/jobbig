@@ -3,6 +3,6 @@ import { ContinuousWorker } from "../workers/server";
 
 export function ServerPlugin() {
 	return (instance: JobbigInstance) => ({
-		server: () => ContinuousWorker({ jobbig: instance }),
+		server: () => ContinuousWorker({ jobbig: instance }).start(),
 	});
 }

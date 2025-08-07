@@ -46,7 +46,7 @@ export interface Context<T> {
 	 * @param run The data of the new run
 	 * @returns
 	 */
-	schedule: (run: RunData) => Promise<void>;
+	schedule: (run: RunOpts) => Promise<void>;
 }
 
 export const RunStatus = {

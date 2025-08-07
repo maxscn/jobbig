@@ -51,7 +51,11 @@ jobbig.publish({
 });
 jobbig.publish({
 	type: "user.created",
-	payload: {},
+	payload: {
+		id: "456",
+		email: "test2@example.com",
+		name: "Jane Doe",
+	},
 });
 jobbig.schedule({
 	jobId: "job3",
@@ -59,3 +63,4 @@ jobbig.schedule({
 
 // Polls for jobs and runs them
 jobbig.server();
+console.log("server finished");

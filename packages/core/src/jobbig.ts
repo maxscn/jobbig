@@ -62,12 +62,14 @@ export function Jobbig<
 			return store;
 		},
 		get jobs(): readonly J[] {
+			console.log("fetched jobs from jobbig");
 			return jobs;
 		},
 		create: Run,
 		use<NewPlugins extends Record<string, any>>(
 			plugin: (instance: JobbigInstance<any, any, any, any, any>) => NewPlugins,
 		): JobbigInstance<T, Metadata, J, Id, Plugins & NewPlugins> {
+			plugins.push(plugin);
 			const newMethods = plugin(this);
 			return Object.assign({}, this, newMethods) as JobbigInstance<
 				T,
