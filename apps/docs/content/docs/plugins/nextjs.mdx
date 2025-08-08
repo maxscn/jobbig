@@ -1,0 +1,25 @@
+---
+title: Next.js Plugin
+description: Expose a Next.js route handler to trigger cron securely.
+---
+
+### Usage
+
+```ts
+import { Jobbig } from "@jobbig/core";
+import { NextjsCronPlugin } from "@jobbig/core/plugins";
+
+const jobbig = Jobbig({ store, jobs }).use(NextjsCronPlugin());
+
+// In Next.js app route (e.g., app/api/cron/route.ts)
+export const { GET } = jobbig.serve();
+```
+
+Set `CRON_SECRET` in your environment. Requests must include `Authorization: Bearer <CRON_SECRET>`. Vercel should automatically set these if you are using Vercel Cron Jobs.
+
+### What it adds
+
+- `serve()` that returns a Next.js-compatible HTTP handler object with `GET`.
+- The GET handler checks an `Authorization` header and starts the cron worker when authorized.
+
+

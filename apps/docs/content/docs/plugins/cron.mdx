@@ -1,0 +1,22 @@
+---
+title: Cron Plugin
+description: Create a cron-friendly worker.
+---
+
+### Usage
+
+```ts
+import { Jobbig } from "@jobbig/core";
+import { CronPlugin } from "@jobbig/core/plugins";
+
+const jobbig = Jobbig({ store, jobs }).use(CronPlugin());
+
+// In a cron trigger
+await jobbig.cron().start();
+```
+
+### What it adds
+
+- `cron()`: returns a worker suitable for cron-style invocation.
+
+

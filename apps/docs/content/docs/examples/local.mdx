@@ -1,0 +1,43 @@
+---
+title: Local Example
+description: Run jobs locally with an in-memory Store and the Server plugin. This is basically only used testing. 
+---
+
+This example shows how to:
+
+- Define multiple jobs with steps
+- Use `LocalStore` to hold runs
+- Start a continuous worker with `ServerPlugin`
+
+### Code
+
+Source: `examples/local/index.ts`
+
+```ts
+import { Job, Jobbig } from "@jobbig/core";
+import { ServerPlugin } from "@jobbig/core/plugins";
+import { sleep } from "@jobbig/core/utils";
+import { LocalStore } from "@jobbig/local";
+import { z } from "zod";
+
+const store = LocalStore({});
+
+const jobs = [
+  Job({ id: "job1", schema: z.object(), run: async () => { await sleep(1000); } }),
+  Job({
+    id: "job2",
+    schema: z.object({ input: z.number().optional(), output: z.number().optional() }),
+    run: async ({ ctx }) => {
+      await ctx.step.run("step1", async () => { await sleep(1000); });
+      await ctx.step.run("step2", async () => { await sleep(1000); });
+    },
+  }),
+];
+
+const jobbig = Jobbig({ store, jobs }).use(ServerPlugin());
+
+await jobbig.schedule({ jobId: "job2", data: { input: 1 } });
+jobbig.server();
+```
+
+

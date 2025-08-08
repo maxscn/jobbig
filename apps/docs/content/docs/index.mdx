@@ -10,16 +10,65 @@ description: A TypeScript library for type-safe durable workflows with pluggable
 
 > This is the first library I have ever published, I might not get everything right immediately. Before version 1.0.0, there will be breaking changes. Before 1.0.0, I will treat minor versions as major versions and patches as both bug fixes and features.
 
+## Notes about development
+
+Jobbig is currently in early development, but should be usable above version 0.2. Below I will outline which features I am using in production, which features are tested and which features exist but are currently untested. 
+
+Versioning will look like this:
+
+- During 0.2 I will roll out this to a few projects I am working on. 
+- During 0.3 I will write unit tests for core concepts. 
+- During 0.4 I will write type performance tests.
+- During 0.5 I will write proper integration tests 
+
+During 0.x you should install the exact package version, as there can be breaking changes. I will try to keep this to a minimum. 
+
+### Properly tested
+
+I will be writing tests during version 0.2, but have currently not started this. 
+
+### Features me or others verified to be working reliably
+
+- the schedule and publish function without **scheduledAt**
+- the use, on and handle functions
+- the sqs plugin
+- the drizzle store
+
+
+### Not properly tested at all
+
+- the schedule and publish function with **scheduledAt**
+- steps
+- retries
+
+
 ## Quick Start
 
+```bash
+npm install @jobbig/core       # npm
+yarn add @jobbig/core          # yarn
+bun add @jobbig/core           # bun
+pnpm add @jobbig/core          # pnpm
+```
+
+There is also an optional drizzle store which can be installed with:
+
+```bash
+npm install @jobbig/drizzle       # npm
+yarn add @jobbig/drizzle          # yarn
+bun add @jobbig/drizzle           # bun
+pnpm add @jobbig/drizzle          # pnpm
+```
+
+
 ```typescript
-import { job } from "@jobbig/core";
-import { LocalQueue, LocalStore } from "@jobbig/local";
-import { server } from "@jobbig/runners";
+import { Job, Jobbig } from "@jobbig/core";
+import { ServerPlugin } from "@jobbig/core/plugins";
+import { LocalStore } from "@jobbig/local";
 import { z } from "zod";
 
-// Define a job with steps
-const myJob = job({
+// 1) Define a job with steps
+const processData = Job({
   id: "process-data",
   schema: z.object({
     input: z.number(),
@@ -40,174 +89,30 @@ const myJob = job({
   },
 });
 
-// Set up local storage and queue
-const queue = LocalQueue([]);
+// 2) Instantiate a store
 const store = LocalStore({});
 
-
-
-// Start the server
-const worker = ContinousWorker({
-  queue,
+// 3) Create Jobbig, register plugins/jobs, and start the server worker
+const jobbig = Jobbig({
   store,
-  jobs: [myJob],
-});
-worker.start();
+  jobs: [processData],
+}).use(ServerPlugin());
 
-
-
-// Create the publisher
-const publisher = Publisher({
-	queue,
-	store,
+// 4) Schedule runs
+await jobbig.schedule({
+  jobId: "process-data",
+  data: { input: 42 },
 });
 
-// Publish runs
-for (const run of runs) {
-	await publisher.publish(run);
-}
+// 5) Start processing
+jobbig.server();
 
 ```
 
 ## Concepts
 
-A brief explanation of the key interfaces and concepts of Jobbig.
+See [Concepts](./docs/concepts) for a full overview of key interfaces: Worker, Orchestrator, Runner, Job, Step, Run, and Store.
 
-### Worker
-A worker is a handler for different types of environments.
-
-```typescript
-interface Worker {
-	start(): Promise<void>;
-}
-```
-
-### Orchestrator
-An orchestrator specifies how the polling of jobs is done. In a cron job, it exhausts the queue until it is empty, but in a server environment, it constantly polls the queue for new jobs within a specified interval.
-
-### Runner
-A runner is responsible for executing jobs. There exists a [`BaseRunner`](packages/core/src/runner.ts), which is likely sufficient in most cases.
-
-```typescript
-export interface Runner {
-	run(): Promise<void>;
-}
-```
-
-### Job
-A job is a function which can be scheduled. A job can consist of multiple steps.
-
-```typescript
-export interface Job<T extends StandardSchemaV1 = any> {
-	/**
-	 * Unique identifier of the jobs. Used to match handlers with runs.
-	 */
-	id: string;
-	/**
-	 * The job runner.
-	 * @param opts - The options for running the job.
-	 * @returns A promise that resolves when the job is completed.
-	 */
-	run(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
-	/**
-	 * Schema of the data
-	 */
-	schema: T;
-	retries?: {
-		/**
-		 * Max amount of retries
-		 * @default 0
-		 */
-		amount?: number;
-		/**
-		 * Defaults to exponential backoff
-		 * @param attempt (the current attempt, starts at 0)
-		 * @returns delay
-		 */
-		delayFn?: (attempt: number) => number;
-	};
-
-	hooks?: {
-		beforeRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
-		afterRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
-		beforeStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
-		afterStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
-	};
-}
-```
-
-### Step
-A step is a smaller part of a job, which consists of a handler and an id. A step with a given id will only be executed once per job. While the core logic of the job will be rerun on retries.
-
-```typescript
-export interface Step {
-	run(id: string, handler: () => Promise<void>): Promise<void>;
-	cleanup(): Promise<void>;
-}
-```
-
-### Run
-A run is a scheduled execution of a job. It contains metadata about the jobs execution, such as the status, start time, end time, results and the current execution step.
-
-```typescript
-export interface Run {
-	id: string;
-	jobId: string;
-	status: RunStatus;
-	scheduledAt: Date;
-	data: unknown;
-	result?: unknown;
-	currentStep: number;
-	startedAt?: Date;
-	createdAt: Date;
-	finishedAt?: Date;
-}
-```
-
-### Store
-A store contains the state of the run. I choose to separate it from **Queue** to allow for things that cannot fetch specific data.
-
-```typescript
-export interface Store {
-	store(run: Run): Promise<void>;
-	set<T extends keyof Run>(runId: string, key: T, value: Run[T]): Promise<void>;
-	get<T extends keyof Run>(runId: string, key: T): Promise<Run[T] | undefined>;
-	fetch(runId: string): Promise<Run | undefined>;
-}
-```
-
-#### ScopedStore
-A scoped store is a store that is scoped to a specific run. It is used to store and retrieve data for a specific run, so that it can be used in the context of the job without being able to impact other runs.
-
-```typescript
-export interface ScopedStore {
-	set<T extends keyof Run>(key: T, value: Run[T]): Promise<void>;
-	get<T extends keyof Run>(key: T): Promise<Run[T] | undefined>;
-}
-```
-
-### Queue
-A queue is responsible for storing and retrieving runs. It is used to schedule and execute jobs.
-
-```typescript
-export interface QueueInfo {
-  exhausted: boolean;
-}
-
-export interface Queue {
-	push(run: Run): Promise<unknown>;
-  poll(amount: number): Promise<{ runs: Run[], info: QueueInfo }>;
-}
-```
-
-### Publisher
-A publisher is responsible for publishing runs to a queue.
-
-```typescript
-export interface Publisher {
-	publish(run: Run): Promise<void>;
-}
-```
 
 ## Development
 
@@ -222,15 +127,6 @@ bun run build
 cd examples/local
 bun run index.ts
 ```
-
-## Example
-
-See [`examples/local/index.ts`](examples/local/index.ts) for a complete working example with:
-
-- Multiple job definitions
-- Step-based execution
-- Local queue and storage setup
-- Server runner configuration
 
 ## License
 

@@ -1,0 +1,33 @@
+---
+title: SQS Example
+description: Process jobs via AWS SQS/Lambda using the SQS plugin.
+---
+
+This example shows how to:
+
+- Define jobs and run them in AWS Lambda with SQS triggers
+- Use `SQSPlugin` to expose a Lambda handler
+- Keep state with `LocalStore` (swap to a persistent store in production)
+
+### Code
+
+Source: `examples/sqs/index.ts`
+
+```ts
+import { Job, Jobbig } from "@jobbig/core";
+import { SQSPlugin } from "@jobbig/core/plugins";
+import { must, sleep } from "@jobbig/core/utils";
+import { LocalStore } from "@jobbig/local";
+import { z } from "zod";
+
+const jobs = [ /* ...jobs... */ ];
+const store = LocalStore({});
+const jobbig = Jobbig({ store, jobs }).use(
+  SQSPlugin({ queueUrl: must(process.env.QUEUE_URL!, "QUEUE_URL required") })
+);
+// in jobbig.ts. deploy these to a cron lambda handler and a lambda regular handler to be triggered by an SQS. 
+
+export const { cron, handler } = jobbig;
+```
+
+

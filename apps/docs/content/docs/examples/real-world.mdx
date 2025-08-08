@@ -1,0 +1,46 @@
+---
+title: Real world example
+description: Compose multiple plugins and demonstrate scheduling from jobs/events.
+---
+
+This example shows how to:
+
+- Compose `EventPlugin`, `ServerPlugin`, and `SQSPlugin`
+- Define jobs and events, and schedule from within handlers
+- Run a server worker that polls until the store is exhausted each time cron is invoked
+
+### Code
+
+Based on: `examples/concurrency/index.ts`
+
+```ts
+import { Job, Jobbig } from "@jobbig/core";
+import { EventPlugin, ServerPlugin, SQSPlugin } from "@jobbig/core/plugins";
+import { DrizzleStore } from "@jobbig/drizzle";
+import { z } from "zod";
+
+const store = DrizzleStore({ db: db });
+const jobbig = Jobbig({ store, jobs: [ /* ... */ ] })
+  .use(EventPlugin())
+  .use(ServerPlugin())
+  .use(SQSPlugin({ queueUrl: "test" }))
+  .handle({
+    id: "job3",
+    schema: z.object({ max: z.number() }),
+    handler: async ({ ctx }) => {
+      console.log("running job3");
+    }
+  })
+  .on({
+    type: "user.updated",
+    schema: z.object({ id: z.string() }),
+    handler: async ({ ctx }) => {
+      ctx.schedule({ jobId: "job3", data: { max: 10 } });
+    },
+});
+
+// in jobbig.ts. deploy these to a cron lambda handler and a lambda regular handler to be triggered by an SQS. 
+export { cron, handler } = jobbig
+```
+
+

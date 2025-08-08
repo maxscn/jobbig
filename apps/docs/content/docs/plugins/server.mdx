@@ -1,0 +1,22 @@
+---
+title: Server Plugin
+description: Start a continuous worker that polls the store and runs jobs.
+---
+
+### Usage
+
+```ts
+import { Jobbig } from "@jobbig/core";
+import { ServerPlugin } from "@jobbig/core/plugins";
+
+const jobbig = Jobbig({ store, jobs }).use(ServerPlugin());
+
+// Start processing in a long-running process
+jobbig.server();
+```
+
+### What it adds
+
+- `server(): Promise<void>`: starts a continuous polling worker.
+
+

@@ -1,0 +1,33 @@
+---
+title: Drizzle Example
+description: Use a SQL-backed Store with Drizzle.
+---
+
+This example shows how to:
+
+- Use `DrizzleStore` (MySQL/Postgres) to persist runs
+- Define jobs and schedule runs
+- Use `ServerPlugin` to process runs continuously
+
+### Code
+
+Source: `examples/drizzle/index.ts`
+
+```ts
+import { Job, Jobbig } from "@jobbig/core";
+import { ServerPlugin } from "@jobbig/core/plugins";
+import { DrizzleStore } from "@jobbig/drizzle";
+import { drizzle } from "drizzle-orm/mysql2";
+import { z } from "zod";
+
+const db = drizzle(process.env.DATABASE_URL!);
+const store = await DrizzleStore({ db });
+
+const jobs = [ /* ...jobs... */ ];
+const jobbig = Jobbig({ store, jobs }).use(ServerPlugin());
+
+await jobbig.schedule({ jobId: "job2", data: {} });
+jobbig.server();
+```
+
+

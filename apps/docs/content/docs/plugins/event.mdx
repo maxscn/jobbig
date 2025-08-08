@@ -1,0 +1,37 @@
+---
+title: Event Plugin
+description: Define event-driven handlers and publish events.
+---
+
+### Usage
+
+```ts
+import { Jobbig } from "@jobbig/core";
+import { EventPlugin } from "@jobbig/core/plugins";
+import { z } from "zod";
+
+const jobbig = Jobbig({ store, jobs: [] }).use(EventPlugin());
+
+jobbig
+  .on({
+    type: "user.created",
+    schema: z.object({ id: z.string() }),
+    handler: async ({ ctx }) => {
+      console.log("User created:", ctx.data.id);
+    },
+  })
+  .on({
+    type: "user.deleted",
+    schema: z.object({ id: z.string() }),
+    handler: async () => {},
+  });
+
+await jobbig.publish({ type: "user.created", payload: { id: "123" } });
+```
+
+### What it adds
+
+- `on({ type, schema, handler })`: register an event; events are internally jobs keyed by `type`.
+- `publish({ type, payload })`: validate payload then schedule a run for the matching event.
+
+

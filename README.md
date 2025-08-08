@@ -11,13 +11,13 @@ A TypeScript library for type-safe durable workflows with pluggable storage/queu
 ## Quick Start
 
 ```typescript
-import { job } from "@jobbig/core";
-import { LocalQueue, LocalStore } from "@jobbig/local";
-import { server } from "@jobbig/runners";
+import { Job, Jobbig } from "@jobbig/core";
+import { ServerPlugin } from "@jobbig/core/plugins";
+import { LocalStore } from "@jobbig/local";
 import { z } from "zod";
 
-// Define a job with steps
-const myJob = job({
+// 1) Define a job with steps
+const processData = Job({
   id: "process-data",
   schema: z.object({
     input: z.number(),
@@ -38,32 +38,23 @@ const myJob = job({
   },
 });
 
-// Set up local storage and queue
-const queue = LocalQueue([]);
+// 2) Instantiate a store
 const store = LocalStore({});
 
-
-
-// Start the server
-const worker = ContinousWorker({
-  queue,
+// 3) Create Jobbig, register plugins/jobs, and start the server worker
+const jobbig = Jobbig({
   store,
-  jobs: [myJob],
-});
-worker.start();
+  jobs: [processData],
+}).use(ServerPlugin());
 
-
-
-// Create the publisher
-const publisher = Publisher({
-	queue,
-	store,
+// 4) Schedule runs
+await jobbig.schedule({
+  jobId: "process-data",
+  data: { input: 42 },
 });
 
-// Publish runs
-for (const run of runs) {
-	await publisher.publish(run);
-}
+// 5) Start processing
+jobbig.server();
 
 ```
 
@@ -163,14 +154,18 @@ export interface Run {
 ```
 
 ### Store
-A store contains the state of the run. I choose to separate it from **Queue** to allow for things that cannot fetch specific data.
+A store contains the state of each run and the polling/locking used by workers.
 
 ```typescript
 export interface Store {
-	store(run: Run): Promise<void>;
-	set<T extends keyof Run>(runId: string, key: T, value: Run[T]): Promise<void>;
-	get<T extends keyof Run>(runId: string, key: T): Promise<Run[T] | undefined>;
-	fetch(runId: string): Promise<Run | undefined>;
+  push(run: RunData): Promise<void>;
+  poll(amount: number): Promise<{ runs: RunData[]; info: { exhausted: boolean } }>;
+  set<T extends keyof RunData>(runId: string, key: T, value: RunData[T]): Promise<void>;
+  get<T extends keyof RunData>(runId: string, key: T): Promise<RunData[T] | undefined>;
+  fetch(runId: string): Promise<RunData | undefined>;
+  lock(runId: string): Promise<boolean>;
+  unlock(runId: string): Promise<boolean>;
+  isLocked(runId: string): Promise<boolean>;
 }
 ```
 
@@ -184,28 +179,7 @@ export interface ScopedStore {
 }
 ```
 
-### Queue
-A queue is responsible for storing and retrieving runs. It is used to schedule and execute jobs.
-
-```typescript
-export interface QueueInfo {
-  exhausted: boolean;
-}
-
-export interface Queue {
-	push(run: Run): Promise<unknown>;
-  poll(amount: number): Promise<{ runs: Run[], info: QueueInfo }>;
-}
-```
-
-### Publisher
-A publisher is responsible for publishing runs to a queue.
-
-```typescript
-export interface Publisher {
-	publish(run: Run): Promise<void>;
-}
-```
+<!-- Removed Queue and Publisher sections; the new API schedules via Jobbig and stores/polls via Store. -->
 
 ## Development
 
@@ -227,8 +201,8 @@ See [`examples/local/index.ts`](examples/local/index.ts) for a complete working 
 
 - Multiple job definitions
 - Step-based execution
-- Local queue and storage setup
-- Server runner configuration
+- Local storage setup
+- Server plugin configuration
 
 ## License
 

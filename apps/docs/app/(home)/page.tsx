@@ -4,7 +4,7 @@ export default function HomePage() {
 	return (
 		<main className="flex flex-1 flex-col justify-center text-center">
 			<h1 className="text-3xl font-bold">Jobbig</h1>
-			<h2 className="mb-4">Coming soon</h2>
+			<h2 className="mb-4">Early development</h2>
 			<p className="px-5 mx-auto text-fd-muted-foreground max-w-2xl mb-4">
 				A TypeScript library for type-safe durable workflows with pluggable
 				storage/queue backends.

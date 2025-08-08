@@ -1,0 +1,30 @@
+---
+title: Plugins
+description: Extend Jobbig with pluggable capabilities like server workers, events, SQS handlers, and cron.
+---
+
+### Overview
+
+Jobbig exposes a small set of plugins you can compose onto a `Jobbig` instance using `use(...)`:
+
+- ServerPlugin: start a long-running worker for local/server environments
+- EventPlugin: define and publish event-driven handlers
+- SQSPlugin: handle AWS SQS/Lambda events or poll the store
+- CronPlugin: create a cron-friendly worker interface
+- NextjsCronPlugin: expose a Next.js route to trigger cron securely
+
+
+Example of composing plugins:
+
+```ts
+import { Jobbig } from "@jobbig/core";
+import { ServerPlugin, EventPlugin } from "@jobbig/core/plugins";
+
+const jobbig = Jobbig({ store, jobs: [] })
+  .use(ServerPlugin())
+  .use(EventPlugin());
+
+jobbig.server();
+```
+
+

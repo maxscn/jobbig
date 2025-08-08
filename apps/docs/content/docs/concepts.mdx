@@ -1,0 +1,137 @@
+---
+title: Concepts
+description: A brief explanation of the key interfaces and concepts of Jobbig.
+---
+
+### Overview
+
+A brief explanation of the key interfaces and concepts of Jobbig. 
+
+### Jobbig
+`Jobbig` is the main factory that composes your jobs, store, and plugins. It exposes methods to register plugins and jobs, and to schedule runs.
+
+Common operations:
+- Register plugins: `jobbig.use(ServerPlugin())`
+- Register jobs: `jobbig.handle(MyJob)`
+- Schedule a run: `await jobbig.schedule({ jobId: "my-id", data })`
+
+### Store
+A store contains the state of each run and the polling/locking used by workers.
+
+```typescript
+export interface Store {
+  push(run: RunData): Promise<void>;
+  poll(amount: number): Promise<{ runs: RunData[]; info: { exhausted: boolean } }>;
+  set<T extends keyof RunData>(runId: string, key: T, value: RunData[T]): Promise<void>;
+  get<T extends keyof RunData>(runId: string, key: T): Promise<RunData[T] | undefined>;
+  fetch(runId: string): Promise<RunData | undefined>;
+  lock(runId: string): Promise<boolean>;
+  unlock(runId: string): Promise<boolean>;
+  isLocked(runId: string): Promise<boolean>;
+}
+```
+
+#### ScopedStore
+A scoped store is a store that is scoped to a specific run. It is used to store and retrieve data for a specific run, so that it can be used in the context of the job without being able to impact other runs.
+
+```typescript
+export interface ScopedStore {
+  set<T extends keyof Run>(key: T, value: Run[T]): Promise<void>;
+  get<T extends keyof Run>(key: T): Promise<Run[T] | undefined>;
+}
+```
+
+### Job
+A job is a function which can be scheduled. A job can consist of multiple steps.
+
+```typescript
+export interface Job<T extends StandardSchemaV1 = any> {
+  /**
+   * Unique identifier of the jobs. Used to match handlers with runs.
+   */
+  id: string;
+  /**
+   * The job runner.
+   * @param opts - The options for running the job.
+   * @returns A promise that resolves when the job is completed.
+   */
+  run(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+  /**
+   * Schema of the data
+   */
+  schema: T;
+  retries?: {
+    /**
+     * Max amount of retries
+     * @default 0
+     */
+    amount?: number;
+    /**
+     * Defaults to exponential backoff
+     * @param attempt (the current attempt, starts at 0)
+     * @returns delay
+     */
+    delayFn?: (attempt: number) => number;
+  };
+
+  hooks?: {
+    beforeRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+    afterRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+  };
+}
+```
+
+### Worker
+A worker is a handler for different types of environments.
+
+```typescript
+interface Worker {
+  start(): Promise<void>;
+}
+```
+
+### Orchestrator
+An orchestrator specifies how the polling of jobs is done. In a cron job, it exhausts the queue until it is empty, but in a server environment, it constantly polls the queue for new jobs within a specified interval.
+
+### Runner
+A runner is responsible for executing jobs. There exists a [`BaseRunner`](packages/core/src/runner.ts), which is likely sufficient in most cases.
+
+```typescript
+export interface Runner {
+  run(): Promise<void>;
+}
+```
+
+
+### Step
+A step is a smaller part of a job, which consists of a handler and an id. A step with a given id will only be executed once per job. While the core logic of the job will be rerun on retries.
+
+```typescript
+export interface Step {
+  run(id: string, handler: () => Promise<void>): Promise<void>;
+  cleanup(): Promise<void>;
+}
+```
+
+### Run
+A run is a scheduled execution of a job. It contains metadata about the jobs execution, such as the status, start time, end time, results and the current execution step.
+
+```typescript
+export interface Run {
+  id: string;
+  jobId: string;
+  status: RunStatus;
+  scheduledAt: Date;
+  data: unknown;
+  result?: unknown;
+  currentStep: number;
+  attempt?: number;
+  startedAt?: Date;
+  createdAt: Date;
+  finishedAt?: Date;
+}
+```
+
+
+
+

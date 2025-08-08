@@ -1,0 +1,31 @@
+---
+title: SQS Plugin
+description: Handle AWS SQS/Lambda events or poll the store.
+---
+
+### Usage
+
+```ts
+import { Jobbig } from "@jobbig/core";
+import { SQSPlugin } from "@jobbig/core/plugins";
+import type { SQSEvent } from "aws-lambda";
+
+const jobbig = Jobbig({ store, jobs }).use(
+  SQSPlugin({ queueUrl: "your-queue-url" })
+);
+
+// Lambda handler
+export const { handler } = jobbig;
+// or
+export const handler = async (event: SQSEvent) => jobbig.handler(event);
+
+// Cron/polling
+await jobbig.cron();
+```
+
+### What it adds
+
+- `handler(event: SQSEvent)`: processes incoming SQS messages.
+- `cron()`: provides access to polling (via the instance store).
+
+
