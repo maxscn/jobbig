@@ -14,6 +14,5 @@
     "@jobbig/core": "workspace:*",
     "@jobbig/drizzle": "workspace:*",
     "drizzle-orm": ">=0.36.4"
-
   }
 }
