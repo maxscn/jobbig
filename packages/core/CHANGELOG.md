@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.2.0
+
+### Minor Changes
+
+- ec51897: APIs are somewhat in place. The library should now be usable.
+
 ## 0.1.33
 
 ### Patch Changes
