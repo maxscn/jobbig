@@ -109,7 +109,7 @@ export function EventPlugin<Events extends Event[] = []>(
 					],
 				});
 				// Apply the updated plugin to the instance
-				return this.use(updatedPlugin).handle(job) as UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType>]>>;
+				return this.use(updatedPlugin).handle(job) as UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType>]>>;
 			}
 		};
 

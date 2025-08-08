@@ -31,8 +31,8 @@ type UpdateJobsInInstance<
 export type UpdatePluginsInInstance<
   I extends JobbigInstance<any, any, any>,
   NewPlugins extends Record<string, any>
-> = I extends JobbigInstance<infer J, infer M, any>
-  ? JobbigInstance<J, M, NewPlugins> & Omit<I, keyof JobbigInstance<any, any, any>> & NewPlugins
+> = I extends JobbigInstance<infer J, infer M, infer P>
+  ? JobbigInstance<J, M, NewPlugins & P> & Omit<I, keyof JobbigInstance<any, any, any>> & NewPlugins & P
   : never;
 
 export function Jobbig<
@@ -126,10 +126,3 @@ export interface JobbigInstance<
 	>(this: I, job: NewJob): UpdateJobsInInstance<I, [...T, NewJob]>
 }
 
-
-export type MergeShapes<U, V> =
-	keyof U & keyof V extends never
-	? U & V
-	: {
-		[k in Exclude<keyof U, keyof V>]: U[k];
-	} & V;
