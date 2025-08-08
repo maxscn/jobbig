@@ -2,7 +2,7 @@
   "name": "@jobbig/drizzle",
   "module": "./dist/index.js",
   "type": "module",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "zshy": {
     "exports": {
       ".": "./src/index.ts",
@@ -15,8 +15,8 @@
   },
   "peerDependencies": {
     "typescript": "^5",
-    "drizzle-orm": "^0.x",
-    "drizzle-kit": "^0.x"
+    "drizzle-orm": "^0",
+    "drizzle-kit": "^0"
   },
   "dependencies": {
     "@jobbig/core": "*",
