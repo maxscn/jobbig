@@ -1,11 +1,11 @@
 import type { Store } from "@jobbig/core";
 import { and, eq, lte } from "drizzle-orm";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { migrate } from "./migrate";
 import { runs } from "./schema";
+import type { AnyPostgresDatabase } from "../drizzle-type";
 
 interface DrizzlePostgresStoreOpts {
-	db: PostgresJsDatabase;
+	db: AnyPostgresDatabase;
 	margin?: number;
 }
 export async function DrizzlePostgresStore(

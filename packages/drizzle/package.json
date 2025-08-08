@@ -11,12 +11,17 @@
     }
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "drizzle-kit": "^0"
   },
   "peerDependencies": {
     "typescript": "^5",
-    "drizzle-orm": "^0",
-    "drizzle-kit": "^0"
+    "drizzle-orm": ">=0.36.4"
+  },
+  "peerDependenciesMeta": {
+    "drizzle-orm": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@jobbig/core": "*",

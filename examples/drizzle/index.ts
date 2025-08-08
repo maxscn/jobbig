@@ -1,8 +1,9 @@
-import { job, jobbig, Scheduler } from "@jobbig/core";
+import { Job, Jobbig } from "@jobbig/core";
+import { ServerPlugin } from "@jobbig/core/plugins";
 import { sleep } from "@jobbig/core/utils";
-import { DrizzleMySQLQueue, DrizzleMySQLStore } from "@jobbig/drizzle/mysql";
-import { ContinuousWorker } from "@jobbig/workers";
-import { drizzle } from "drizzle-orm/mysql2";
+import { DrizzleStore } from "@jobbig/drizzle";
+import {  DrizzleMySQLStore } from "@jobbig/drizzle/mysql";
+import { drizzle, } from "drizzle-orm/mysql2";
 import { z } from "zod";
 
 const runs = [
@@ -37,31 +38,26 @@ const runs = [
 		createdAt: new Date(),
 	},
 ] as const;
-
-const queue = await DrizzleMySQLQueue({
-	db: drizzle(process.env.DATABASE_URL!),
-	dialect: "mysql",
-});
-const store = await DrizzleMySQLStore({
-	db: drizzle(process.env.DATABASE_URL!),
-	dialect: "mysql",
-});
-const scheduler = Scheduler({
-	queue,
-	store,
+const db = drizzle(process.env.DATABASE_URL!);
+const store = await DrizzleStore({
+	db: db
 });
 
+db.execute
 const jobs = [
-	job({
+	Job({
 		id: "job1",
-		run: async () => {
+		run: async ({ctx }) => {
+			ctx.schedule({
+				jobId: "abc"
+			})
 			console.log("Running job 1...");
 			await sleep(1000);
 			console.log("Job 1 completed.");
 		},
 		schema: z.object(),
 	}),
-	job({
+	Job({
 		id: "job2",
 		run: async ({ ctx }) => {
 			console.log("Running job 2...");
@@ -85,16 +81,11 @@ const jobs = [
 	}),
 ];
 
-const worker = ContinuousWorker({
-	queue,
-	store,
-	jobs: jobs,
-});
-worker.start();
 
-const planner = jobbig<typeof jobs>({
-	scheduler,
-});
+const planner = Jobbig({
+	store,
+	jobs
+}).use(ServerPlugin())
 planner.schedule({
 	jobId: "job2",
 	data: {},
@@ -102,3 +93,4 @@ planner.schedule({
 for (const run of runs) {
 	await planner.schedule(run);
 }
+planner.server();

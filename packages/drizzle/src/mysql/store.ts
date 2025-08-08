@@ -4,17 +4,11 @@ import type { MySql2Database, MySqlDatabase, AnyMySql2Connection } from "drizzle
 import type { PlanetScaleDatabase } from "drizzle-orm/planetscale-serverless";
 import { migrate } from "./migrate";
 import { runs } from "./schema";
+import type { AnyMySqlDatabase } from "../drizzle-type";
 
-export async function DrizzleMySQLStore(opts: {
-	db: MySql2Database<any> & { $client: AnyMySql2Connection };
-	margin?: number;
-}): Promise<Store>;
-export async function DrizzleMySQLStore(opts: {
-	db: PlanetScaleDatabase<any> & { $client: any};
-	margin?: number;
-}): Promise<Store>;
-export async function DrizzleMySQLStore(opts: {
-	db: MySqlDatabase<any, any, any, any>
+
+export async function DrizzleMySQLStore<DB extends AnyMySqlDatabase>(opts: {
+	db: DB;
 	margin?: number;
 }): Promise<Store> {
 	const db = opts.db;
@@ -100,7 +94,7 @@ export async function DrizzleMySQLStore(opts: {
 					.set({ status: "pending" })
 					.where(and(eq(runs.id, runId), eq(runs.status, "running"))),
 			);
-			return rows.length > 0;
+			return true;
 		},
 		async isLocked(runId) {
 			const rows = await db.transaction(async (tx) =>
