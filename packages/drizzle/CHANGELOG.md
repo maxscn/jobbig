@@ -1,5 +1,13 @@
 # @jobbig/drizzle
 
+## 0.1.29
+
+### Patch Changes
+
+- ef3e835: Drizzle changes: broader type signature, since I can't get it to work otherwise. Core changes: If no match job, we should still schedule the run without type validation.
+- Updated dependencies [ef3e835]
+  - @jobbig/core@0.1.33
+
 ## 0.1.18
 
 ### Patch Changes
