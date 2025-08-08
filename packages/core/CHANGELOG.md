@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.1.31
+
+### Patch Changes
+
+- 44cc072: Fix type safety independent of order of operations
+
 ## 0.1.20
 
 ### Patch Changes
