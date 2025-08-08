@@ -18,25 +18,30 @@ type SchemaForId<J extends JobType, Id extends J["id"]> = Extract<
 >["schema"];
 
 type SchemaForIdFromArray<T extends JobType<any, any>[], Id extends JobsFromArray<T>["id"]> =
-  Extract<JobsFromArray<T>, { id: Id }>["schema"];
+	Extract<JobsFromArray<T>, { id: Id }>["schema"];
 
-
+type UpdateJobsInInstance<
+  I extends JobbigInstance<any, any, any>,
+  NewJobs extends JobType<any, any>[]
+> = I extends JobbigInstance<any, infer M, infer P>
+  ? JobbigInstance<NewJobs, M, P> & Omit<I, keyof JobbigInstance<any, any, any>>
+  : never;
 
 export function Jobbig<
 	T extends JobType<any, any>[],
 	Metadata = unknown,
 	Plugins extends Record<string, any> = {},
 >(opts: JobbigOpts<T, Metadata, Plugins>): JobbigInstance<T, Metadata, Plugins> & Plugins {
-	const { store,  metadata } = opts;
+	const { store, metadata } = opts;
 	const plugins: Plugins = opts.plugins ?? {} as Plugins;
 	let jobs = opts.jobs ?? [] as unknown as T;
 
 	const baseInstance = {
 		async schedule<SpecificId extends JobsFromArray<T>["id"]>(
 			run: RunOpts<
-					SpecificId,
-					StandardSchemaV1.InferInput<SchemaForId<JobsFromArray<T>["schema"], SpecificId>>
-				>
+				SpecificId,
+				StandardSchemaV1.InferInput<SchemaForId<JobsFromArray<T>["schema"], SpecificId>>
+			>
 		) {
 			const matchedJob = jobs.find((j) => j.id === run.jobId);
 			if (!matchedJob) throw new Error(`Job ${run.jobId} not found`);
@@ -62,7 +67,7 @@ export function Jobbig<
 		get plugins(): Plugins {
 			return plugins
 		},
-		use<J extends JobbigInstance<any, any, any>,  NewPlugin extends Record<string, any>>(
+		use<J extends JobbigInstance<any, any, any>, NewPlugin extends Record<string, any>>(
 			this: J,
 			plugin: (instance: JobbigInstance<T, Metadata, Plugins>) => NewPlugin,
 		): JobbigInstance<T, Metadata, Plugins & NewPlugin> {
@@ -70,29 +75,20 @@ export function Jobbig<
 			Object.assign(plugins, newMethods);
 			return Object.assign(this, newMethods) as J & Plugins & NewPlugin;
 		},
-		handle<TSchema extends StandardSchemaV1, Id extends string>(job: JobType<TSchema, Id>): JobbigInstance<
-			[...T, JobType<TSchema, Id>],
-			Metadata,
-			Plugins
-		> {
+		handle<
+			I extends JobbigInstance<any, any, any> & Plugins,
+			TSchema extends StandardSchemaV1,
+			Id extends string,
+			NewJob extends JobType<TSchema, Id> = JobType<TSchema, Id>
+		>(this: I, job: NewJob): UpdateJobsInInstance<I, [...T, NewJob]> {
 			const j = Job({ ...job }) as Readonly<JobType<TSchema, Id>>;
 			jobs = [...jobs, j] as T;
-			return Jobbig.bind(this)({
-				store,
-				jobs,
-				metadata,
-				plugins,
-			}) as unknown as JobbigInstance<
-				[...T, JobType<TSchema, Id>],
-				Metadata,
-				Plugins
-			> & Plugins
-			
+			return this as UpdateJobsInInstance<I, [...T, NewJob]>
 		},
 	};
 
 	// Initialize plugins
-	
+
 	return Object.assign(baseInstance, plugins) as JobbigInstance<T, Metadata, Plugins> & Plugins;
 }
 
@@ -104,9 +100,9 @@ export interface JobbigInstance<
 > {
 	schedule: <SpecificId extends JobsFromArray<T>["id"]>(
 		run: RunOpts<
-    SpecificId,
-    StandardSchemaV1.InferInput<SchemaForIdFromArray<T, SpecificId>>
-  >
+			SpecificId,
+			StandardSchemaV1.InferInput<SchemaForIdFromArray<T, SpecificId>>
+		>
 	) => Promise<void>;
 	store: Store;
 	jobs: T;
@@ -115,15 +111,18 @@ export interface JobbigInstance<
 	use<NewPlugin extends Record<string, any>>(
 		plugin: (instance: JobbigInstance<T, Metadata, Plugins> & Plugins) => NewPlugin,
 	): JobbigInstance<T, Metadata, Plugins & NewPlugin> & Plugins & NewPlugin;
-	handle<TSchema extends StandardSchemaV1, Id extends string>(
-		job: JobType<TSchema, Id>,
-	): JobbigInstance<[...T, JobType<TSchema, Id>], Metadata, Plugins> & Plugins;
+	handle<
+		I extends JobbigInstance<any, any, any> & Plugins,
+		TSchema extends StandardSchemaV1,
+		Id extends string,
+		NewJob extends JobType<TSchema, Id> = JobType<TSchema, Id>
+	>(this: I, job: NewJob): UpdateJobsInInstance<I, [...T, NewJob]>
 }
 
 
-  export type MergeShapes<U, V> =
-    keyof U & keyof V extends never
-      ? U & V
-      : {
-          [k in Exclude<keyof U, keyof V>]: U[k];
-        } & V;
+export type MergeShapes<U, V> =
+	keyof U & keyof V extends never
+	? U & V
+	: {
+		[k in Exclude<keyof U, keyof V>]: U[k];
+	} & V;

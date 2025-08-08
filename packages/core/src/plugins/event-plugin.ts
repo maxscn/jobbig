@@ -3,11 +3,6 @@ import { type JobType } from "../job";
 import type { JobbigInstance, JobsFromArray } from "../jobbig";
 import type { RunInput } from "../run";
 
-type EventData<Type extends string = string, Payload = unknown> = {
-	type: Type;
-	payload: Payload;
-};
-
 interface EventOpts<T extends Event[]> {
 	events?: T;
 }
@@ -29,13 +24,11 @@ type SchemaForType<E extends Event, Type extends E["type"]> = Extract<
 type EventPluginReturn<
 	Events extends Event[],
 > = {
-	publish: <SpecificType extends EventsFromArray<Events>["type"]>(
-		event: EventData<
-			SpecificType,
-			StandardSchemaV1.InferInput<
-				SchemaForType<EventsFromArray<Events>, SpecificType>
-			>
-		>,
+	publish: <Type extends Events[number]["type"] & string = Events[number]["type"] | (string & {})>(
+		event: {
+			type: Type;
+				payload: any;
+		},
 	) => Promise<void>;
 	on<
 		T extends JobbigInstance<any, any, any>,
@@ -44,7 +37,8 @@ type EventPluginReturn<
 	>(
 		this: T,
 		event: Event<NewSchema, NewType>
-	): T & EventPluginReturn<[...Events, Event<NewSchema, NewType>]>
+	): T & EventPluginReturn<[...Events, Event<NewSchema, NewType>]>;
+	types: Events[number]["type"][][number]
 };
 
 export function EventPlugin<Events extends Event[] = []>(
@@ -55,76 +49,76 @@ export function EventPlugin<Events extends Event[] = []>(
 	return <
 		JobTypes extends JobType[] = JobType[],
 		Metadata = unknown,
-		J extends JobType = JobsFromArray<JobTypes>,
-		Id extends J["id"] = J["id"],
 		Plugins extends Record<string, any> = {},
 	>(
 		instance: JobbigInstance<JobTypes, Metadata, Plugins>,
 	): EventPluginReturn<Events> => {
 		const pluginMethods = {
-			publish: async <SpecificType extends EventsFromArray<Events>["type"]>(
-				event:  {
-							type: SpecificType
-							payload: StandardSchemaV1.InferInput<SchemaForType<EventsFromArray<Events>, SpecificType>>
-						}
-			) => {
+			publish: async <
+				Type extends Events[number]["type"] & string = Events[number]["type"] | (string & {}),
+			>(event: {
+				type: Type;
+				payload: any;
+			}) => {
 				const matchedEvent = events.find((e) => e.type === event.type);
 				if (!matchedEvent) throw new Error(`Event ${event.type} not found`);
 
 				let result = matchedEvent.schema["~standard"].validate(event.payload);
 				if (result instanceof Promise) result = await result;
 
-				// if the `issues` field exists, the validation failed
 				if (result.issues) {
 					throw new Error(JSON.stringify(result.issues, null, 2));
 				}
-				
-				// @ts-ignore
+
 				await instance.schedule({
-					jobId: event.type as unknown as Id,
+					jobId: event.type,
 					data: event.payload,
 				});
 			},
-
 			on<
-				T extends JobbigInstance<JobTypes, Metadata, Plugins>,
+				I extends JobbigInstance<any, any, any>,
 				const NewSchema extends StandardSchemaV1,
 				const NewType extends string,
 			>(
-				this: T,
+				this: I,
 				event: {
-							type: NewType;
-							schema: NewSchema;
-							handler: (
-								opts: RunInput<StandardSchemaV1.InferInput<NewSchema>>,
-							) => Promise<void>;
-					  }
-			): T & EventPluginReturn<
-						 [...Events, Event<NewSchema, NewType>]
-					> {
-					const job = {
-						id: event.type,
-						schema: event.schema,
-						run: event.handler,
-					};
-					const newInstance = instance.handle(job);
-					// Create a new event from the input
-					const newEvent: Event<NewSchema, NewType> = {
-						type: event.type,
-						schema: event.schema,
-						handler: event.handler,
-					};
-
-					// Create a new plugin with the updated events array
-					const updatedPlugin = EventPlugin({
-						events: [...events, newEvent] as [
-							...Events,
-							Event<NewSchema, NewType>,
-						],
-					});
-					// Apply the updated plugin to the instance
-					return Object.assign(newInstance as unknown as T, updatedPlugin(newInstance))
+					type: NewType;
+					schema: NewSchema;
+					handler: (
+						opts: RunInput<StandardSchemaV1.InferInput<NewSchema>>,
+					) => Promise<void>;
 				}
+			): I & Pick<JobbigInstance<
+					[...JobTypes, JobType<any, any>],
+					Metadata,
+					Plugins & EventPluginReturn<[...Events, Event<NewSchema, NewType>]>
+				>, "jobs"> & EventPluginReturn<[...Events, Event<NewSchema, NewType>]> {
+				const job = {
+					id: event.type,
+					schema: event.schema,
+					run: event.handler,
+				};
+				// Create a new event from the input
+				const newEvent: Event<NewSchema, NewType> = {
+					type: event.type,
+					schema: event.schema,
+					handler: event.handler,
+				};
+
+				// Create a new plugin with the updated events array
+				const updatedPlugin = EventPlugin({
+					events: [...events, newEvent] as [
+						...Events,
+						Event<NewSchema, NewType>,
+					],
+				});
+				// Apply the updated plugin to the instance
+				return this.use(updatedPlugin).handle(job) as I & Pick<JobbigInstance<
+					[...JobTypes, JobType<any, any>],
+					Metadata,
+					Plugins & EventPluginReturn<[...Events, Event<NewSchema, NewType>]>
+				>, "jobs"> & EventPluginReturn<[...Events, Event<NewSchema, NewType>]>;
+			}
 		};
 
 		return pluginMethods as EventPluginReturn<Events>;
