@@ -1,4 +1,4 @@
-import { Jobbig } from "@jobbig/core";
+import { Job, Jobbig } from "@jobbig/core";
 import { EventPlugin, ServerPlugin, SQSPlugin } from "@jobbig/core/plugins";
 import { LocalStore } from "@jobbig/local";
 import { z } from "zod";
@@ -8,13 +8,23 @@ const store = LocalStore({});
 // Instansiate store and provide the job registry
 const jobbig = Jobbig({
 	store,
+	jobs: [
+		Job({
+			id: "job3",
+			run: async ({ ctx }) => {
+				await ctx.sleep(10000 * Math.random());
+			},
+			schema: z.object({
+				max: z.number().min(0).max(100),
+			}),
+		}),
+	],
 })
 	.use(EventPlugin())
 	.use(ServerPlugin())
-	.use(SQSPlugin({ queueUrl: "test" }))
-	// Define a job 
+	// Define a job
 	.handle({
-		id: "job3",
+		id: "job5",
 		run: async ({ ctx }) => {
 			await ctx.sleep(10000 * Math.random());
 		},
@@ -31,25 +41,63 @@ const jobbig = Jobbig({
 			name: z.string().min(2).max(100),
 		}),
 		handler: async ({ ctx }) => {
+			ctx.schedule({
+				jobId: "job5",
+				data: { min: 10 },
+			});
 			console.log("Handling user.updated event:", ctx);
 		},
-	});
+	})
+	.on({
+		type: "user.created",
+		schema: z.object({
+			x: z.string(),
+			email: z.email(),
+			name: z.string().min(2).max(100),
+		}),
+		handler: async ({ ctx }) => {
+			console.log("Handling user.created event:", ctx);
+		},
+	})
+	.on({
+		type: "user.deleted",
+		schema: z.object({
+			x: z.string(),
+			email: z.email(),
+			name: z.string().min(2).max(100),
+		}),
+		handler: async ({ ctx }) => {
+			console.log("Handling user.deleted event:", ctx);
+		},
+	})
+	.handle({
+		id: "job7",
+		run: async ({ ctx }) => { 
+			await ctx.sleep(10000 * Math.random());
+		},
+		schema: z.object({
+			min: z.number().min(0).max(100),
+		}),
+	})
+		.use(SQSPlugin({ queueUrl: "test" }))
 
+const test = jobbig.types
 // Only available to events
 jobbig.publish({
 	type: "user.updated",
 	payload: {
-		id: "123",
-		email: "test@example.com",
-		name: "John Doe",
+		id: "test",
+		email: "test@test.se",
+		name: "Test User",
 	},
 });
 
 // Only relates to jobs
 jobbig.schedule({
-	jobId: "ajob3",
-	data: undefined
+	jobId: "job7",
+	data: { min: 5 },
 });
+
 
 // Polls for jobs and runs them
 await jobbig.server();
