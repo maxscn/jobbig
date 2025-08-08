@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.1.32
+
+### Patch Changes
+
+- 8fbc443: Properly typing ctx.schedule
+
 ## 0.1.31
 
 ### Patch Changes
