@@ -1,6 +1,6 @@
 {
   "name": "@jobbig/core",
-  "version": "0.1.33",
+  "version": "0.2.0",
   "module": "./dist/index.js",
   "type": "module",
   "sideEffects": false,
