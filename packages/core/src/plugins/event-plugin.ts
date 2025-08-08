@@ -1,6 +1,6 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import { type JobType } from "../job";
-import type { JobbigInstance, JobsFromArray } from "../jobbig";
+import type { JobbigInstance, JobsFromArray, UpdatePluginsInInstance } from "../jobbig";
 import type { RunInput } from "../run";
 
 interface EventOpts<T extends Event[]> {
@@ -27,17 +27,17 @@ type EventPluginReturn<
 	publish: <Type extends Events[number]["type"] & string = Events[number]["type"] | (string & {})>(
 		event: {
 			type: Type;
-				payload: any;
+			payload: StandardSchemaV1.InferInput<SchemaForType<EventsFromArray<Events>, Type>>;
 		},
 	) => Promise<void>;
 	on<
-		T extends JobbigInstance<any, any, any>,
+		I extends JobbigInstance<any, any, any>,
 		const NewSchema extends StandardSchemaV1,
 		const NewType extends string,
 	>(
-		this: T,
+		this: I,
 		event: Event<NewSchema, NewType>
-	): T & EventPluginReturn<[...Events, Event<NewSchema, NewType>]>;
+	):  UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType>]>>;
 	types: Events[number]["type"][][number]
 };
 
@@ -88,11 +88,7 @@ export function EventPlugin<Events extends Event[] = []>(
 						opts: RunInput<StandardSchemaV1.InferInput<NewSchema>>,
 					) => Promise<void>;
 				}
-			): I & Pick<JobbigInstance<
-					[...JobTypes, JobType<any, any>],
-					Metadata,
-					Plugins & EventPluginReturn<[...Events, Event<NewSchema, NewType>]>
-				>, "jobs"> & EventPluginReturn<[...Events, Event<NewSchema, NewType>]> {
+			):  UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType>]>> {
 				const job = {
 					id: event.type,
 					schema: event.schema,
@@ -113,11 +109,7 @@ export function EventPlugin<Events extends Event[] = []>(
 					],
 				});
 				// Apply the updated plugin to the instance
-				return this.use(updatedPlugin).handle(job) as I & Pick<JobbigInstance<
-					[...JobTypes, JobType<any, any>],
-					Metadata,
-					Plugins & EventPluginReturn<[...Events, Event<NewSchema, NewType>]>
-				>, "jobs"> & EventPluginReturn<[...Events, Event<NewSchema, NewType>]>;
+				return this.use(updatedPlugin).handle(job) as UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType>]>>;
 			}
 		};
 

@@ -27,6 +27,14 @@ type UpdateJobsInInstance<
   ? JobbigInstance<NewJobs, M, P> & Omit<I, keyof JobbigInstance<any, any, any>>
   : never;
 
+
+export type UpdatePluginsInInstance<
+  I extends JobbigInstance<any, any, any>,
+  NewPlugins extends Record<string, any>
+> = I extends JobbigInstance<infer J, infer M, any>
+  ? JobbigInstance<J, M, NewPlugins> & Omit<I, keyof JobbigInstance<any, any, any>> & NewPlugins
+  : never;
+
 export function Jobbig<
 	T extends JobType<any, any>[],
 	Metadata = unknown,
@@ -67,13 +75,13 @@ export function Jobbig<
 		get plugins(): Plugins {
 			return plugins
 		},
-		use<J extends JobbigInstance<any, any, any>, NewPlugin extends Record<string, any>>(
-			this: J,
+		use<I extends JobbigInstance<any, any, any>, NewPlugin extends Record<string, any>>(
+			this: I,
 			plugin: (instance: JobbigInstance<T, Metadata, Plugins>) => NewPlugin,
-		): JobbigInstance<T, Metadata, Plugins & NewPlugin> {
+		): UpdatePluginsInInstance<I, Plugins & NewPlugin>{
 			const newMethods = plugin(this);
 			Object.assign(plugins, newMethods);
-			return Object.assign(this, newMethods) as J & Plugins & NewPlugin;
+			return Object.assign(this, newMethods) as unknown as UpdatePluginsInInstance<I, Plugins & NewPlugin>;
 		},
 		handle<
 			I extends JobbigInstance<any, any, any> & Plugins,
@@ -108,9 +116,8 @@ export interface JobbigInstance<
 	jobs: T;
 	metadata?: Metadata;
 	plugins: Plugins;
-	use<NewPlugin extends Record<string, any>>(
-		plugin: (instance: JobbigInstance<T, Metadata, Plugins> & Plugins) => NewPlugin,
-	): JobbigInstance<T, Metadata, Plugins & NewPlugin> & Plugins & NewPlugin;
+    use<I extends JobbigInstance<T, Metadata, Plugins>, NewPlugin extends Record<string, any>>(plugin: (instance: JobbigInstance<T, Metadata, Plugins> & Plugins) => NewPlugin): UpdatePluginsInInstance<I, Plugins & NewPlugin>;
+
 	handle<
 		I extends JobbigInstance<any, any, any> & Plugins,
 		TSchema extends StandardSchemaV1,
