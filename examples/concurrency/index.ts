@@ -27,6 +27,10 @@ const jobbig = Jobbig({
 		id: "job5",
 		run: async ({ ctx }) => {
 			await ctx.sleep(10000 * Math.random());
+			ctx.schedule({
+				jobId: "job3",
+				data: { max: 10}
+			})
 		},
 		schema: z.object({
 			min: z.number().min(0).max(100),
@@ -42,8 +46,8 @@ const jobbig = Jobbig({
 		}),
 		handler: async ({ ctx }) => {
 			ctx.schedule({
-				jobId: "job5",
-				data: { min: 10 },
+				jobId: "job3",
+				data: { max: 10 },
 			});
 			console.log("Handling user.updated event:", ctx);
 		},
@@ -67,6 +71,9 @@ const jobbig = Jobbig({
 			name: z.string().min(2).max(100),
 		}),
 		handler: async ({ ctx }) => {
+			ctx.schedule({
+				jobId: "job3"
+			})
 			console.log("Handling user.deleted event:", ctx);
 		},
 	})

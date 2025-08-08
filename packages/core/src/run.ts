@@ -1,6 +1,7 @@
 import { ulid } from "ulid";
 import type { Step } from "./step";
 import type { ScopedStore } from "./store";
+import type { JobbigInstance } from "./jobbig";
 
 export interface RunData {
 	id: string;
@@ -17,7 +18,8 @@ export interface RunData {
 	attempt?: number | null;
 }
 
-export interface Context<T> {
+
+export type Context<T, I extends JobbigInstance<any, any, any> = JobbigInstance<any, any, any>> = {
 	/**
 	 * Data contained within the run.
 	 */
@@ -46,7 +48,7 @@ export interface Context<T> {
 	 * @param run The data of the new run
 	 * @returns
 	 */
-	schedule: (run: RunOpts) => Promise<void>;
+	schedule: I["schedule"];
 }
 
 export const RunStatus = {
@@ -58,8 +60,8 @@ export const RunStatus = {
 
 export type RunStatus = (typeof RunStatus)[keyof typeof RunStatus];
 
-export interface RunInput<T> {
-	ctx: Context<T>;
+export interface RunInput<T, I extends JobbigInstance<any, any, any>> {
+	ctx: Context<T, I>;
 }
 export type RunOpts<JobId extends string = string, JobData = unknown> = {
 	jobId: JobId;

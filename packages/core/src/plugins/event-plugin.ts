@@ -7,10 +7,10 @@ interface EventOpts<T extends Event[]> {
 	events?: T;
 }
 
-interface Event<T extends StandardSchemaV1 = any, Id extends string = string> {
+interface Event<T extends StandardSchemaV1 = any, Id extends string = string, I extends JobbigInstance<any, any, any> = JobbigInstance<any, any, any>> {
 	type: Id;
 	schema: T;
-	handler: (input: RunInput<StandardSchemaV1.InferInput<T>>) => Promise<void>;
+	handler: (input: RunInput<StandardSchemaV1.InferInput<T>, I>) => Promise<void>;
 }
 
 type EventsFromArray<T extends Event[]> = T[number];
@@ -22,7 +22,7 @@ type SchemaForType<E extends Event, Type extends E["type"]> = Extract<
 
 // Simplified plugin return type
 type EventPluginReturn<
-	Events extends Event[],
+	Events extends Event<any, any, any>[],
 > = {
 	publish: <Type extends Events[number]["type"] & string = Events[number]["type"] | (string & {})>(
 		event: {
@@ -36,8 +36,8 @@ type EventPluginReturn<
 		const NewType extends string,
 	>(
 		this: I,
-		event: Event<NewSchema, NewType>
-	):  UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType>]>>;
+		event: Event<NewSchema, NewType, I>
+	):  UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType, I>]>>;
 	types: Events[number]["type"][][number]
 };
 
@@ -85,17 +85,17 @@ export function EventPlugin<Events extends Event[] = []>(
 					type: NewType;
 					schema: NewSchema;
 					handler: (
-						opts: RunInput<StandardSchemaV1.InferInput<NewSchema>>,
+						opts: RunInput<StandardSchemaV1.InferInput<NewSchema>, I>,
 					) => Promise<void>;
 				}
-			):  UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType>]>> {
+			):  UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType, I>]>> {
 				const job = {
 					id: event.type,
 					schema: event.schema,
 					run: event.handler,
 				};
 				// Create a new event from the input
-				const newEvent: Event<NewSchema, NewType> = {
+				const newEvent: Event<NewSchema, NewType, I> = {
 					type: event.type,
 					schema: event.schema,
 					handler: event.handler,
@@ -109,7 +109,7 @@ export function EventPlugin<Events extends Event[] = []>(
 					],
 				});
 				// Apply the updated plugin to the instance
-				return this.use(updatedPlugin).handle(job) as UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType>]>>;
+				return this.use(updatedPlugin).handle(job) as UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType, I>]>>;
 			}
 		};
 

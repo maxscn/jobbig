@@ -1,9 +1,11 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { RunInput } from "./run";
+import type { JobbigInstance } from "./jobbig";
 
 export interface JobType<
 	T extends StandardSchemaV1 = any,
 	Id extends string = string,
+	I extends JobbigInstance<any, any, any> = JobbigInstance<any, any, any>,
 > {
 	/**
 	 * Unique identifier of the jobs. Used to match handlers with runs.
@@ -14,15 +16,15 @@ export interface JobType<
 	 * @param opts - The options for running the job.
 	 * @returns A promise that resolves when the job is completed.
 	 */
-	run(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+	run(opts: RunInput< StandardSchemaV1.InferInput<T>, I>): Promise<void>;
 	/**
 	 * Schema of the data
 	 */
 	schema: T;
 
 	hooks?: {
-		beforeRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
-		afterRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+		beforeRun?(opts: RunInput<StandardSchemaV1.InferInput<T>, I>): Promise<void>;
+		afterRun?(opts: RunInput<StandardSchemaV1.InferInput<T>, I>): Promise<void>;
 		// beforeStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
 		// afterStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
 	};
@@ -34,12 +36,11 @@ export interface JobType<
 	retries?: number;
 }
 
-export const Job = <const T extends StandardSchemaV1, const Id extends string>({
+export const Job = <const T extends StandardSchemaV1, const Id extends string, I extends JobbigInstance<any, any, any> = JobbigInstance<any, any, any>>({
 	id,
 	run,
 	schema,
-	retries = 0,
-}: Readonly<JobType<T, Id>>) => {
+	retries = 0,}: Readonly<JobType<T, Id, I>>) => {
 	if (!id || id.length === 0) {
 		throw new Error(`Job ID must be a non-empty string`);
 	}
@@ -48,7 +49,7 @@ export const Job = <const T extends StandardSchemaV1, const Id extends string>({
 	}
 	return {
 		id,
-		run: async (opts: RunInput<T>) => {
+		run: async (opts: RunInput<T, I>) => {
 			let result = schema["~standard"].validate(opts.ctx.data);
 			if (result instanceof Promise) result = await result;
 
@@ -60,5 +61,5 @@ export const Job = <const T extends StandardSchemaV1, const Id extends string>({
 		},
 		schema,
 		retries,
-	} as JobType<T, Id>;
+	} as JobType<T, Id, I>;
 };

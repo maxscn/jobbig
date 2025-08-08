@@ -21,19 +21,19 @@ type SchemaForIdFromArray<T extends JobType<any, any>[], Id extends JobsFromArra
 	Extract<JobsFromArray<T>, { id: Id }>["schema"];
 
 type UpdateJobsInInstance<
-  I extends JobbigInstance<any, any, any>,
-  NewJobs extends JobType<any, any>[]
+	I extends JobbigInstance<any, any, any>,
+	NewJobs extends JobType<any, any>[]
 > = I extends JobbigInstance<any, infer M, infer P>
-  ? JobbigInstance<NewJobs, M, P> & Omit<I, keyof JobbigInstance<any, any, any>>
-  : never;
+	? JobbigInstance<NewJobs, M, P> & Omit<I, keyof JobbigInstance<any, any, any>>
+	: never;
 
 
 export type UpdatePluginsInInstance<
-  I extends JobbigInstance<any, any, any>,
-  NewPlugins extends Record<string, any>
+	I extends JobbigInstance<any, any, any>,
+	NewPlugins extends Record<string, any>
 > = I extends JobbigInstance<infer J, infer M, infer P>
-  ? JobbigInstance<J, M, NewPlugins & P> & Omit<I, keyof JobbigInstance<any, any, any>> & NewPlugins & P
-  : never;
+	? JobbigInstance<J, M, NewPlugins & P> & Omit<I, keyof JobbigInstance<any, any, any>> & NewPlugins & P
+	: never;
 
 export function Jobbig<
 	T extends JobType<any, any>[],
@@ -78,7 +78,7 @@ export function Jobbig<
 		use<I extends JobbigInstance<any, any, any>, NewPlugin extends Record<string, any>>(
 			this: I,
 			plugin: (instance: JobbigInstance<T, Metadata, Plugins>) => NewPlugin,
-		): UpdatePluginsInInstance<I, Plugins & NewPlugin>{
+		): UpdatePluginsInInstance<I, Plugins & NewPlugin> {
 			const newMethods = plugin(this);
 			Object.assign(plugins, newMethods);
 			return Object.assign(this, newMethods) as unknown as UpdatePluginsInInstance<I, Plugins & NewPlugin>;
@@ -87,9 +87,9 @@ export function Jobbig<
 			I extends JobbigInstance<any, any, any> & Plugins,
 			TSchema extends StandardSchemaV1,
 			Id extends string,
-			NewJob extends JobType<TSchema, Id> = JobType<TSchema, Id>
+			NewJob extends JobType<TSchema, Id, I> = JobType<TSchema, Id, I>
 		>(this: I, job: NewJob): UpdateJobsInInstance<I, [...T, NewJob]> {
-			const j = Job({ ...job }) as Readonly<JobType<TSchema, Id>>;
+			const j = Job({ ...job }) as Readonly<JobType<TSchema, Id, I>>;
 			jobs = [...jobs, j] as T;
 			return this as UpdateJobsInInstance<I, [...T, NewJob]>
 		},
@@ -116,13 +116,13 @@ export interface JobbigInstance<
 	jobs: T;
 	metadata?: Metadata;
 	plugins: Plugins;
-    use<I extends JobbigInstance<T, Metadata, Plugins>, NewPlugin extends Record<string, any>>(plugin: (instance: JobbigInstance<T, Metadata, Plugins> & Plugins) => NewPlugin): UpdatePluginsInInstance<I, Plugins & NewPlugin>;
+	use<I extends JobbigInstance<T, Metadata, Plugins>, NewPlugin extends Record<string, any>>(plugin: (instance: JobbigInstance<T, Metadata, Plugins> & Plugins) => NewPlugin): UpdatePluginsInInstance<I, Plugins & NewPlugin>;
 
 	handle<
 		I extends JobbigInstance<any, any, any> & Plugins,
 		TSchema extends StandardSchemaV1,
 		Id extends string,
-		NewJob extends JobType<TSchema, Id> = JobType<TSchema, Id>
+		NewJob extends JobType<TSchema, Id, I> = JobType<TSchema, Id, I>
 	>(this: I, job: NewJob): UpdateJobsInInstance<I, [...T, NewJob]>
 }
 

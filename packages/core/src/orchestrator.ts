@@ -6,7 +6,7 @@ import type { QueueInfo } from "./store";
 const DEFAULT_CONCURRENCY = 50;
 
 export interface OrchestratorOpts<
-	T extends JobType[] = any,
+	T extends JobType<any, any, any>[] = JobType<any, any, any>[],
 	Metadata = unknown,
 	Plugins extends Record<string, any> = {},
 > {
