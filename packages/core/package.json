@@ -28,8 +28,8 @@
   },
   "dependencies": {
     "@standard-schema/spec": "^1.0.0",
-    "ulid": "^3.0.1",
-    "aws4fetch": "^1.0.20"
+    "aws4fetch": "^1.0.20",
+    "ulid": "^3.0.1"
   },
   "files": [
     "dist",

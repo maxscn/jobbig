@@ -139,7 +139,7 @@
     },
     "packages/core": {
       "name": "@jobbig/core",
-      "version": "0.1.32",
+      "version": "0.1.33",
       "dependencies": {
         "@standard-schema/spec": "^1.0.0",
         "aws4fetch": "^1.0.20",
@@ -154,7 +154,7 @@
     },
     "packages/drizzle": {
       "name": "@jobbig/drizzle",
-      "version": "0.1.28",
+      "version": "0.1.29",
       "dependencies": {
         "@jobbig/core": "*",
         "mysql2": "^3.14.3",
