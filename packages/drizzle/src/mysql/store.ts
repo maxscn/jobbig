@@ -1,20 +1,20 @@
 import type { RunData, Store } from "@jobbig/core";
-import { and, eq, lte } from "drizzle-orm";
-import type { MySql2Database, MySqlDatabase } from "drizzle-orm/mysql2";
+import { and, eq, lte} from "drizzle-orm";
+import type { MySql2Database, MySqlDatabase, AnyMySql2Connection } from "drizzle-orm/mysql2";
 import type { PlanetScaleDatabase } from "drizzle-orm/planetscale-serverless";
 import { migrate } from "./migrate";
 import { runs } from "./schema";
 
 export async function DrizzleMySQLStore(opts: {
-	db: MySql2Database<any>;
+	db: MySql2Database<any> & { $client: AnyMySql2Connection };
 	margin?: number;
 }): Promise<Store>;
 export async function DrizzleMySQLStore(opts: {
-	db: PlanetScaleDatabase<any>;
+	db: PlanetScaleDatabase<any> & { $client: any};
 	margin?: number;
 }): Promise<Store>;
 export async function DrizzleMySQLStore(opts: {
-	db: MySqlDatabase<any, any, any, any>;
+	db: MySqlDatabase<any, any, any, any>
 	margin?: number;
 }): Promise<Store> {
 	const db = opts.db;
