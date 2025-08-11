@@ -11,8 +11,9 @@ export function SQSPlugin({ pollAmount = 100 }: SQSPluginProps) {
 		handler: (payload: SQSEvent) => {
 			return SQSWorker({ jobbig: instance, payload }).start();
 		},
-		cron: () => {
-			return instance.store.poll(pollAmount);
+		cron: async () => {
+			const store = await instance.store;
+			return store.poll(pollAmount);
 		},
 	});
 }

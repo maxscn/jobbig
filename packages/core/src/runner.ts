@@ -17,10 +17,10 @@ export interface Runner {
 class AbortError extends Error {}
 
 export function BaseRunner({ run, jobbig }: RunnerOpts): Runner {
-	const store = jobbig.store;
 	const jobs = jobbig.jobs;
 	return {
 		async run() {
+			const store = await jobbig.store;
 			const lock = await store.lock(run.id);
 			if (!lock) {
 				return;

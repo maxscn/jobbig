@@ -7,7 +7,7 @@ export type JobsFromArray<T extends readonly JobType[]> = T[number];
 
 interface JobbigOpts<T extends Readonly<JobType<any, any>>[], Metadata, Plugins extends Record<string, any>> {
 	jobs?: T;
-	store: Store;
+	store: Promise<Store> | Store;
 	metadata?: Metadata;
 	plugins?: Plugins;
 }
@@ -40,7 +40,7 @@ export function Jobbig<
 	Metadata = unknown,
 	Plugins extends Record<string, any> = {},
 >(opts: JobbigOpts<T, Metadata, Plugins>): JobbigInstance<T, Metadata, Plugins> & Plugins {
-	const { store, metadata } = opts;
+	const { metadata } = opts;
 	const plugins: Plugins = opts.plugins ?? {} as Plugins;
 	let jobs = opts.jobs ?? [] as unknown as T;
 
@@ -51,6 +51,7 @@ export function Jobbig<
 				StandardSchemaV1.InferInput<SchemaForId<JobsFromArray<T>["schema"], SpecificId>>
 			>
 		) {
+			const store = await opts.store;
 			const matchedJob = jobs.find((j) => j.id === run.jobId);
 			if (!matchedJob) return store.push(Run({ ...run, metadata }));
 			let result = matchedJob.schema["~standard"].validate(run.data);
@@ -63,8 +64,8 @@ export function Jobbig<
 
 			return store.push(Run({ ...run, metadata }));
 		},
-		get store(): Store {
-			return store;
+		get store(): Store | Promise<Store> {
+			return opts.store;
 		},
 		get jobs(): T {
 			return jobs;
@@ -112,7 +113,7 @@ export interface JobbigInstance<
 			StandardSchemaV1.InferInput<SchemaForIdFromArray<T, SpecificId>>
 		>
 	) => Promise<void>;
-	store: Store;
+	store: Store | Promise<Store>;
 	jobs: T;
 	metadata?: Metadata;
 	plugins: Plugins;

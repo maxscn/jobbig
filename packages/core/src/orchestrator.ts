@@ -21,9 +21,9 @@ export type Orchestrator = (
 export const BaseOrchestrator: Orchestrator = (opts: OrchestratorOpts) => {
 	const concurrency = opts.concurrency ?? DEFAULT_CONCURRENCY;
 	const jobbig = opts.jobbig;
-	const store = jobbig.store;
 	let running: WrappedPromise<void>[] = [];
 	return async () => {
+		const store = await jobbig.store;
 		running = running.filter((r) => !r.isDone);
 		console.log(`Running ${running.length} jobs`);
 		console.log(`Waiting for ${concurrency - running.length} jobs`);
