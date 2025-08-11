@@ -1,5 +1,16 @@
 # @jobbig/drizzle
 
+## 0.2.0
+
+### Minor Changes
+
+- ec51897: APIs are somewhat in place. The library should now be usable.
+
+### Patch Changes
+
+- Updated dependencies [ec51897]
+  - @jobbig/core@0.2.0
+
 ## 0.1.29
 
 ### Patch Changes
