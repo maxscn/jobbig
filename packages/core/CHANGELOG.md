@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.2.1
+
+### Patch Changes
+
+- 02daee2: fix: allow for Promise<Store> to jobbig instance.
+
 ## 0.2.0
 
 ### Minor Changes
