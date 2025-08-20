@@ -21,7 +21,7 @@
     "@changesets/cli": "^2.29.5",
     "turbo": "^2.5.5"
   },
-  "packageManager": "bun@1.2.19",
+  "packageManager": "bun@1.2.20",
   "scripts": {
     "dev": "turbo run dev",
     "dev:watch": "turbo run dev --watch",

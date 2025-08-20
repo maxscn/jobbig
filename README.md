@@ -183,14 +183,28 @@ export interface ScopedStore {
 
 ## Development
 
+### Prerequisites
+- **Required**: Node.js **v24+** (project uses modern ES modules and features)
+- **Recommended**: Use nvm for Node.js version management
+- **Setup**: `nvm use default` to use the latest Node.js version
+
+### Package Manager
+- **Required**: bun v1.2.20 (specified in package.json)
+- **Install**: `curl -fsSL https://bun.sh/install | bash`
+
+
+### 1. Install Dependencies
 ```bash
-# Install dependencies
 bun install
+```
 
-# Build all packages
+### 2. Build all packages
+```bash
 bun run build
+```
 
-# Run the example
+### 3. Run the example
+```bash
 cd examples/local
 bun run index.ts
 ```
