@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.2.2
+
+### Patch Changes
+
+- d83e046: Exporting Event factory
+
 ## 0.2.1
 
 ### Patch Changes
