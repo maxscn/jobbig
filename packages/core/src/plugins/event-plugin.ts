@@ -7,12 +7,32 @@ interface EventOpts<T extends Event[]> {
 	events?: T;
 }
 
-export interface Event<T extends StandardSchemaV1 = any, Id extends string = string, I extends JobbigInstance<any, any, any> = JobbigInstance<any, any, any>> {
+export interface Event<T extends StandardSchemaV1 = any, Id extends string = string> {
 	type: Id;
 	schema: T;
-	handler: (input: RunInput<StandardSchemaV1.InferInput<T>, I>) => Promise<void>;
 }
 
+// New helper type to get the union of schemas for multiple types from available events
+type SchemaForTypes<Events extends Event[], Types extends string[]> = {
+	[K in keyof Types]: Types[K] extends Events[number]["type"]
+	? SchemaForType<Events[number], Types[K]>
+	: never;
+}[number];
+
+export interface EventListener<I extends JobbigInstance<any, any, any>, Events extends Event[], Types extends string[]> {
+	types: Types;
+	handler: (opts: EventHandlerUnion<I, Events, Types>) => Promise<void>
+}
+
+type EventHandlerUnion<I extends JobbigInstance<any, any, any>, Events extends Event[], Types extends string[]> = {
+	[K in keyof Types]: Types[K] extends Events[number]["type"] 
+		? RunInput<
+			StandardSchemaV1.InferInput<SchemaForType<Events[number], Types[K]>>,
+			Types[K],
+			I
+		>
+		: never
+}[number];
 type EventsFromArray<T extends Event[]> = T[number];
 
 type SchemaForType<E extends Event, Type extends E["type"]> = Extract<
@@ -22,7 +42,7 @@ type SchemaForType<E extends Event, Type extends E["type"]> = Extract<
 
 // Simplified plugin return type
 type EventPluginReturn<
-	Events extends Event<any, any, any>[],
+	Events extends Event<any, any>[],
 > = {
 	publish: <Type extends Events[number]["type"] & string = Events[number]["type"] | (string & {}) >(
 		event: {
@@ -32,13 +52,19 @@ type EventPluginReturn<
 	) => Promise<void>;
 	on<
 		I extends JobbigInstance<any, any, any>,
+		const Types extends string[],
+	>(
+		this: I,
+		event: EventListener<I, Events, Types>
+		): I
+	event<
+		I extends JobbigInstance<any, any, any>,
 		const NewSchema extends StandardSchemaV1,
 		const NewType extends string,
 	>(
 		this: I,
-		event: Event<NewSchema, NewType, I>
-	): UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType, I>]>>;
-	types: Events[number]["type"][][number]
+		event: Event<NewSchema, NewType>
+	): UpdatePluginsInInstance<Omit<I, "event" | "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType>]>>;
 };
 
 export function EventPlugin<Events extends Event[] = []>(
@@ -53,7 +79,7 @@ export function EventPlugin<Events extends Event[] = []>(
 	>(
 		instance: JobbigInstance<JobTypes, Metadata, Plugins>,
 	): EventPluginReturn<Events> => {
-		const pluginMethods = {
+		return {
 			publish: async <
 				Type extends Events[number]["type"] & string = Events[number]["type"] | (string & {}),
 			>(event: {
@@ -75,72 +101,46 @@ export function EventPlugin<Events extends Event[] = []>(
 					data: event.payload,
 				});
 			},
-			on<
+			event<
 				I extends JobbigInstance<any, any, any>,
 				const NewSchema extends StandardSchemaV1,
 				const NewType extends string,
 			>(
 				this: I,
-				event: {
-					type: NewType;
-					schema: NewSchema;
-					handler: (
-						opts: RunInput<StandardSchemaV1.InferInput<NewSchema>, I>,
-					) => Promise<void>;
-				}
-			): UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType, I>]>> {
-				const job = {
-					id: event.type,
-					schema: event.schema,
-					run: event.handler,
-				};
-				// Create a new event from the input
-				const newEvent: Event<NewSchema, NewType, I> = {
+				event: Event<NewSchema, NewType>
+			): UpdatePluginsInInstance<Omit<I, "event" | "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType>]>> {
+				const newEvent = {
 					type: event.type,
 					schema: event.schema,
-					handler: event.handler,
 				};
 
-				// Create a new plugin with the updated events array
 				const updatedPlugin = EventPlugin({
-					events: [...events, newEvent] as [
-						...Events,
-						Event<NewSchema, NewType>,
-					],
+					events: [...events, newEvent]
 				});
+				return this.use(updatedPlugin) as UpdatePluginsInInstance<Omit<I, "event" | "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType>]>>;
+			},
+			on<
+				I extends JobbigInstance<any, any, any>,
+				const Types extends string[]
+			>(
+				this: I,
+				listener: EventListener<I, Events, Types>
+			): I {
+				let instance: I = this;
+				for (const type of listener.types) {
+					const matchedEvent = events.find(e => e.type === type); 
+					if (!matchedEvent) throw new Error("No matched event found")
+					const job = {
+						id: type,
+						schema: matchedEvent.schema,
+						run: listener.handler
+					}
+					instance = instance.handle(job) as unknown as I
+				}
 				// Apply the updated plugin to the instance
-				return this.use(updatedPlugin).handle(job) as UpdatePluginsInInstance<Omit<I, "on" | "publish">, EventPluginReturn<[...Events, Event<NewSchema, NewType, I>]>>;
+				return instance as I;
 			}
-		};
-
-		return pluginMethods as EventPluginReturn<Events>;
+		} 
 	};
 }
 
-
-export const Event = <const T extends StandardSchemaV1, const Id extends string, I extends JobbigInstance<any, any, any> = JobbigInstance<any, any, any>>({
-	type,
-	handler,
-	schema
-}: Readonly<Event<T, Id, I>>) => {
-	if (!type || type.length === 0) {
-		throw new Error(`Job ID must be a non-empty string`);
-	}
-	if (type.length > 255) {
-		throw new Error(`Job ID must be less than 255 characters`);
-	}
-	return {
-		type,
-		handler: async (opts: RunInput<T, I>) => {
-			let result = schema["~standard"].validate(opts.ctx.data);
-			if (result instanceof Promise) result = await result;
-
-			// if the `issues` field exists, the validation failed
-			if (result.issues) {
-				throw new Error(JSON.stringify(result.issues, null, 2));
-			}
-			return handler(opts);
-		},
-		schema,
-	} as Event<T, Id, I>;
-};

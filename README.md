@@ -79,7 +79,10 @@ A runner is responsible for executing jobs. There exists a [`BaseRunner`](packag
 
 ```typescript
 export interface Runner {
-	run(): Promise<void>;
+	run(): Promise<{
+		promise: Promise<any>,
+		amount: number
+	}>;
 }
 ```
 
@@ -97,7 +100,7 @@ export interface Job<T extends StandardSchemaV1 = any> {
 	 * @param opts - The options for running the job.
 	 * @returns A promise that resolves when the job is completed.
 	 */
-	run(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+	run(opts: RunInput<StandardSchemaV1.InferInput<T>, string, JobbigInstance>): Promise<void>;
 	/**
 	 * Schema of the data
 	 */
@@ -117,10 +120,10 @@ export interface Job<T extends StandardSchemaV1 = any> {
 	};
 
 	hooks?: {
-		beforeRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
-		afterRun?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
-		beforeStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
-		afterStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
+		beforeRun?(opts: RunInput<StandardSchemaV1.InferInput<T>, string, JobbigInstance>): Promise<void>;
+		afterRun?(opts: RunInput<StandardSchemaV1.InferInput<T>, string, JobbigInstance>): Promise<void>;
+		beforeStep?(opts: RunInput<StandardSchemaV1.InferInput<T>, string, JobbigInstance>): Promise<void>;
+		afterStep?(opts: RunInput<StandardSchemaV1.InferInput<T>, string, JobbigInstance>): Promise<void>;
 	};
 }
 ```
@@ -151,6 +154,42 @@ export interface Run {
 	createdAt: Date;
 	finishedAt?: Date;
 }
+```
+
+### Context
+The context provides access to job data, utilities, and scheduling capabilities within job handlers.
+
+```typescript
+export type Context<T, Id extends string, I extends JobbigInstance> = {
+	/**
+	 * The id of the running job.
+	 */
+	id: Id;
+	/**
+	 * Data contained within the run.
+	 */
+	data: T;
+	/**
+	 * Step runner for the current job.
+	 */
+	step: Step;
+	/**
+	 * Scoped store for the current run.
+	 */
+	store: ScopedStore;
+	/**
+	 * Metadata passed when scheduling the job.
+	 */
+	metadata?: Record<string, unknown>;
+	/**
+	 * Schedule a new job run.
+	 */
+	schedule: I["schedule"];
+	/**
+	 * Sleep for a specified duration (ms). Uses steps for durability.
+	 */
+	sleep: (ms: number) => Promise<void>;
+};
 ```
 
 ### Store
@@ -207,3 +246,4 @@ See [`examples/local/index.ts`](examples/local/index.ts) for a complete working 
 ## License
 
 MIT
+

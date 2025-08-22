@@ -10,20 +10,39 @@ import { Jobbig } from "@jobbig/core";
 import { EventPlugin } from "@jobbig/core/plugins";
 import { z } from "zod";
 
-const jobbig = Jobbig({ store, jobs: [] }).use(EventPlugin());
+const jobbig = Jobbig({ store, jobs: [] })
+  .use(EventPlugin({
+    events: [{
+      type: "user.created",
+      schema: z.object({ id: z.string() })
+    }, {
+      type: "user.updated", 
+      schema: z.object({ id: z.string(), email: z.email() })
+    }]
+  }));
 
+// Define additional events
 jobbig
-  .on({
-    type: "user.created",
+  .event({
+    type: "user.deleted",
     schema: z.object({ id: z.string() }),
+  })
+  // Register handlers for events
+  .on({
+    types: ["user.created", "user.updated"],
     handler: async ({ ctx }) => {
-      console.log("User created:", ctx.data.id);
+      if (ctx.id === "user.created") {
+        console.log("User created:", ctx.data.id);
+      } else if (ctx.id === "user.updated") {
+        console.log("User updated:", ctx.data.id, ctx.data.email);
+      }
     },
   })
   .on({
-    type: "user.deleted",
-    schema: z.object({ id: z.string() }),
-    handler: async () => {},
+    types: ["user.deleted"],
+    handler: async ({ ctx }) => {
+      console.log("User deleted:", ctx.data.id);
+    },
   });
 
 await jobbig.publish({ type: "user.created", payload: { id: "123" } });
@@ -31,7 +50,15 @@ await jobbig.publish({ type: "user.created", payload: { id: "123" } });
 
 ### What it adds
 
-- `on({ type, schema, handler })`: register an event; events are internally jobs keyed by `type`.
-- `publish({ type, payload })`: validate payload then schedule a run for the matching event.
+- `.event({ type, schema })`: define an event schema for the given type.
+- `.on({ types, handler })`: register a handler for one or more event types; handlers can access `ctx.id` to determine which event triggered them.
+- `.publish({ type, payload })`: validate payload then schedule a run for the matching event.
+
+### Key Changes
+
+- Events are now defined separately from their handlers using `.event()`
+- Handlers are registered using `.on()` and can listen to multiple event types
+- Event handlers receive `ctx.id` to identify which specific event triggered the handler
+- Events must be defined (either in the plugin config or via `.event()`) before handlers can reference them
 
 

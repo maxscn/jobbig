@@ -21,26 +21,52 @@ import { z } from "zod";
 
 const store = DrizzleStore({ db: db });
 const jobbig = Jobbig({ store, jobs: [ /* ... */ ] })
-  .use(EventPlugin())
+  .use(EventPlugin({
+    events: [{
+      type: "user.updated",
+      schema: z.object({ 
+        id: z.string(),
+        email: z.email(),
+        name: z.string().min(2).max(100)
+      })
+    }]
+  }))
   .use(ServerPlugin())
   .use(SQSPlugin({ queueUrl: "test" }))
   .handle({
     id: "job3",
     schema: z.object({ max: z.number() }),
-    handler: async ({ ctx }) => {
+    handler: async ({ ctx }) => {
       console.log("running job3");
     }
   })
+  .event({
+    type: "user.created",
+    schema: z.object({ 
+      id: z.string(),
+      email: z.email(),
+      name: z.string().min(2).max(100)
+    }),
+  })
   .on({
-    type: "user.updated",
-    schema: z.object({ id: z.string() }),
+    types: ["user.created", "user.updated"],
     handler: async ({ ctx }) => {
+      if (ctx.id === "user.updated") {
+        console.log("User updated:", ctx.data.email);
+      }
       ctx.schedule({ jobId: "job3", data: { max: 10 } });
     },
+  });
+
+// Publish events
+await jobbig.publish({ 
+  type: "user.created", 
+  payload: { id: "123", email: "user@example.com", name: "John Doe" } 
 });
 
 // in jobbig.ts. deploy these to a cron lambda handler and a lambda regular handler to be triggered by an SQS. 
-export { cron, handler } = jobbig
+export const { cron, handler } = jobbig
 ```
+
 
 

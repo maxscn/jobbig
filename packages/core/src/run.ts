@@ -19,7 +19,11 @@ export interface RunData {
 }
 
 
-export type Context<T, I extends JobbigInstance<any, any, any> = JobbigInstance<any, any, any>> = {
+export type Context<T, Id extends string, I extends JobbigInstance<any, any, any> = JobbigInstance<any, any, any>> = {
+	/**
+	 * The id of the running job.
+	 */
+	id: Id;
 	/**
 	 * Data contained within the run.
 	 */
@@ -60,8 +64,8 @@ export const RunStatus = {
 
 export type RunStatus = (typeof RunStatus)[keyof typeof RunStatus];
 
-export interface RunInput<T, I extends JobbigInstance<any, any, any>> {
-	ctx: Context<T, I>;
+export interface RunInput<T, Id extends string, I extends JobbigInstance<any, any, any>> {
+	ctx: Context<T, Id, I>;
 }
 export type RunOpts<JobId extends string = string, JobData = unknown> = {
 	jobId: JobId;
