@@ -1,5 +1,11 @@
 # @jobbig/drizzle
 
+## 0.2.1
+
+### Patch Changes
+
+- 8a87a90: Fix a bug with the migration
+
 ## 0.2.0
 
 ### Minor Changes
