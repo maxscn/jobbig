@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.3.0
+
+### Minor Changes
+
+- 724ea27: Rewriting the event plugin to be able to match multiple events.
+
 ## 0.2.2
 
 ### Patch Changes
