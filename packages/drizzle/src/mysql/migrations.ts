@@ -19,7 +19,6 @@ export const migrations = [
 		started_at timestamp,
 		created_at timestamp NOT NULL DEFAULT (now()),
 		finished_at timestamp,
-		attempt int DEFAULT 0,
 		CONSTRAINT jobbig_runs_id PRIMARY KEY(id)
 );
 `,
