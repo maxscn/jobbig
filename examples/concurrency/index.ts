@@ -20,7 +20,16 @@ const jobbig = Jobbig({
 		}),
 	],
 })
-	.use(EventPlugin())
+	.use(EventPlugin({
+		events: [{
+			type: "user.updated",
+			schema: z.object({
+				id: z.string(),
+				email: z.email(),
+				name: z.string().min(2).max(100),
+			})
+		} as const]
+	}))
 	.use(ServerPlugin())
 	// Define a job
 	.handle({
@@ -29,47 +38,48 @@ const jobbig = Jobbig({
 			await ctx.sleep(10000 * Math.random());
 			ctx.schedule({
 				jobId: "job3",
-				data: { max: 10}
+				data: { max: 10 }
 			})
 		},
 		schema: z.object({
 			min: z.number().min(0).max(100),
 		}),
 	})
-	// Define a job as an event
-	.on({
-		type: "user.updated",
-		schema: z.object({
-			id: z.string(),
-			email: z.email(),
-			name: z.string().min(2).max(100),
-		}),
-		handler: async ({ ctx }) => {
-			ctx.schedule({
-				jobId: "job3",
-				data: { max: 10 },
-			});
-			console.log("Handling user.updated event:", ctx);
-		},
-	})
-	.on({
+	// Define an event
+	.event({
 		type: "user.created",
 		schema: z.object({
 			x: z.string(),
 			email: z.email(),
 			name: z.string().min(2).max(100),
 		}),
-		handler: async ({ ctx }) => {
-			console.log("Handling user.created event:", ctx);
-		},
 	})
-	.on({
+	.event({
 		type: "user.deleted",
 		schema: z.object({
 			x: z.string(),
 			email: z.email(),
 			name: z.string().min(2).max(100),
 		}),
+	})
+	// Define a handler for an event
+	.on({
+		types: ["user.created", "user.updated"],
+		handler: async ({ ctx }) => {
+			if (ctx.id === "user.updated") {
+				console.log(ctx.data.email)
+			}
+			console.log("Handling user.created and user.updated event: " + ctx.id);
+		},
+	})
+		.on({
+		types: ["user.created"],
+		handler: async ({ ctx }) => {
+			console.log("Handling user.created event: " + ctx.id);
+		},
+	})
+	.on({
+		types: ["user.deleted"],
 		handler: async ({ ctx }) => {
 			ctx.schedule({
 				jobId: "job3"
@@ -79,16 +89,25 @@ const jobbig = Jobbig({
 	})
 	.handle({
 		id: "job7",
-		run: async ({ ctx }) => { 
+		run: async ({ ctx }) => {
 			await ctx.sleep(10000 * Math.random());
 		},
 		schema: z.object({
 			min: z.number().min(0).max(100),
 		}),
 	})
-		.use(SQSPlugin({ queueUrl: "test" }))
+	.use(SQSPlugin({ queueUrl: "test" }))
 
-const test = jobbig.types
+// Only available to events
+jobbig.publish({
+	type: "user.created",
+	payload: {
+		x: "test",
+		email: "test@test.se",
+		name: "Test User",
+	},
+});
+
 // Only available to events
 jobbig.publish({
 	type: "user.updated",

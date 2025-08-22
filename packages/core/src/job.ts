@@ -16,15 +16,15 @@ export interface JobType<
 	 * @param opts - The options for running the job.
 	 * @returns A promise that resolves when the job is completed.
 	 */
-	run(opts: RunInput< StandardSchemaV1.InferInput<T>, I>): Promise<void>;
+	run(opts: RunInput<StandardSchemaV1.InferInput<T>, Id, I>): Promise<void>;
 	/**
 	 * Schema of the data
 	 */
 	schema: T;
 
 	hooks?: {
-		beforeRun?(opts: RunInput<StandardSchemaV1.InferInput<T>, I>): Promise<void>;
-		afterRun?(opts: RunInput<StandardSchemaV1.InferInput<T>, I>): Promise<void>;
+		beforeRun?(opts: RunInput<StandardSchemaV1.InferInput<T>, Id, I>): Promise<void>;
+		afterRun?(opts: RunInput<StandardSchemaV1.InferInput<T>, Id, I>): Promise<void>;
 		// beforeStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
 		// afterStep?(opts: RunInput<StandardSchemaV1.InferInput<T>>): Promise<void>;
 	};
@@ -49,7 +49,7 @@ export const Job = <const T extends StandardSchemaV1, const Id extends string, I
 	}
 	return {
 		id,
-		run: async (opts: RunInput<T, I>) => {
+		run: async (opts: RunInput<T, Id, I>) => {
 			let result = schema["~standard"].validate(opts.ctx.data);
 			if (result instanceof Promise) result = await result;
 
