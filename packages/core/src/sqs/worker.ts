@@ -14,7 +14,8 @@ export function SQSWorker({ jobbig, payload }: SQSWorkerOpts): Worker {
 			);
 			for (const run of runs) {
 				const runner = BaseRunner({ run, jobbig });
-				await runner.run();
+				const { promise } = await runner.run();
+				await promise;
 			}
 		},
 	};

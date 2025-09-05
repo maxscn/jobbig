@@ -31,6 +31,7 @@ const jobbig = Jobbig({
 		} as const]
 	}))
 	.use(ServerPlugin())
+	.use(SQSPlugin({ queueUrl: "test" }))
 	// Define a job
 	.handle({
 		id: "job5",
@@ -96,7 +97,6 @@ const jobbig = Jobbig({
 			min: z.number().min(0).max(100),
 		}),
 	})
-	.use(SQSPlugin({ queueUrl: "test" }))
 
 // Only available to events
 jobbig.publish({
