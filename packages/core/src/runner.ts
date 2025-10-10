@@ -1,10 +1,10 @@
 import { ulid } from "ulid";
+import type { JobType } from "./job";
 import { Jobbig, type JobbigInstance } from "./jobbig";
 import type { RunData } from "./run";
 import { Step } from "./step";
 import { ScopedStore, type Store } from "./store";
 import { sleep } from "./utils/sleep";
-import type { JobType } from "./job";
 
 const MAX_INTERNAL_SLEEP_MS = 100000;
 export interface RunnerOpts {
@@ -13,16 +13,15 @@ export interface RunnerOpts {
 }
 export interface Runner {
 	run(): Promise<{
-		promise: Promise<any>,
-		amount: number
+		promise: Promise<any>;
+		amount: number;
 	}>;
 }
 
-class AbortError extends Error { }
-
+class AbortError extends Error {}
 
 export function BaseRunner({ run, jobbig }: RunnerOpts): Runner {
-	async function runJob({ job, store }: { job: JobType, store: Store }) {
+	async function runJob({ job, store }: { job: JobType; store: Store }) {
 		if (!job) {
 			console.log("no job matches the run");
 			await store.set(run.id, "status", "failure");
@@ -78,7 +77,7 @@ export function BaseRunner({ run, jobbig }: RunnerOpts): Runner {
 			// We might eventually want to separate the status of the job logic from the actual run, for easier rescheduling.
 			if (err instanceof AbortError) {
 				await store.unlock(run.id);
-			} else if ((job.retries ?? 0) < (run.attempt ?? 0)) {
+			} else if ((job.retries ?? 0) > (run.attempt ?? 0)) {
 				await store.set(run.id, "attempt", (run.attempt ?? 0) + 1);
 				await store.unlock(run.id);
 			} else {
@@ -94,16 +93,16 @@ export function BaseRunner({ run, jobbig }: RunnerOpts): Runner {
 			const store = await jobbig.store;
 			const lock = await store.lock(run.id);
 			if (!lock) {
-				return { 
+				return {
 					amount: 0,
-					promise: Promise.resolve()
+					promise: Promise.resolve(),
 				};
 			}
 			const toRun = jobs.filter((job) => job.id === run.jobId);
-			return { 
+			return {
 				amount: toRun.length,
-				promise: Promise.all(toRun.map(job => runJob({ job, store })))
-			}
+				promise: Promise.all(toRun.map((job) => runJob({ job, store }))),
+			};
 		},
 	};
 }

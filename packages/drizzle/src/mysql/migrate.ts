@@ -1,4 +1,4 @@
-import { desc, sql } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import type { MySql2Database, MySqlDatabase } from "drizzle-orm/mysql2";
 import type { PlanetScaleDatabase } from "drizzle-orm/planetscale-serverless";
 import { migrations } from "./migrations";
