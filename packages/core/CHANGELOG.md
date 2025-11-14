@@ -1,5 +1,11 @@
 # @jobbig/core
 
+## 0.3.2
+
+### Patch Changes
+
+- 8715656: fix: retries should greater than attempts to run not less than
+
 ## 0.3.1
 
 ### Patch Changes
