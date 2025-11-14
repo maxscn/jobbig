@@ -22,4 +22,6 @@ export const migrations = [
 		CONSTRAINT jobbig_runs_id PRIMARY KEY(id)
 );
 `,
+	sql`CREATE INDEX idx_jobbig_runs_status ON jobbig_runs (status);`,
+	sql`CREATE INDEX idx_jobbig_runs_scheduled_at ON jobbig_runs (scheduled_at);`,
 ];

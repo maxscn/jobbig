@@ -19,4 +19,6 @@ export const migrations = [
 		"created_at" timestamp DEFAULT now() NOT NULL,
 		"finished_at" timestamp
 );`,
+	sql`CREATE INDEX "idx_jobbig_runs_status" ON "jobbig_runs" ("status");`,
+	sql`CREATE INDEX "idx_jobbig_runs_scheduled_at" ON "jobbig_runs" ("scheduled_at");`,
 ];
